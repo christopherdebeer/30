@@ -1,7 +1,7 @@
 View = require( './BaseView.coffee' )
 require( '../assets/css/alert.scss')
 
-module.export = class Alert extends View
+module.exports = class AlertView extends View
 	className: 'alert'
 	template: """
 		<div class="inner">

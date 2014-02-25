@@ -22,32 +22,35 @@ AlertView = require( './views/AlertView.coffee')
 View = require( './views/BaseView.coffee')
 
 startId = 3354234567
-seedTime = 1000 * 60 # * 60 * 24
+SEED_TIME = 1 * 60 * 60 * 24
+console.log "SEED_TIME is #{SEED_TIME}"
+
+
 DATA = [{
 		id: startId + 1
 		message: [ 
 			"Official Party Member Correspondence Device",
 			"OPMCD Uplinking...."]
-		priority: 0.01
+		priority: 1
 		},{
 		id: startId + 2
 		message: [ 
 			"TIME Comrade,", 
 			"The Party is delighted to inform you that tomorrow will be the 2014 Ministry of Plenty Annual Party Census."]
-		priority: 1
+		priority: SEED_TIME / 24 / 60 / 3
 		},{
 		id: startId + 3
 		message: [ 
 			"TIME Comrade,", 
 			"The Party knows all, find consolation in that."]
-		priority: 6
+		priority: SEED_TIME / 24 / 60
 		},{
 		id: startId + 4
 		message: [ 
 			"TIME Comrade,", 
 			"Patience..."
 		]
-		priority: 6
+		priority: SEED_TIME / 24
 }]
 
 
@@ -62,16 +65,16 @@ class app.models.User extends Backbone.Model
 
 	getCurrentOPC: (collection) =>
 		turns = @get('turns')
-		today = moment().startOf( 'day' )
+		today = moment()
 		limit = Math.min( turns, collection.length - 1 )
 		opc = collection.at( limit )
 		read = opc.get( 'read' )
 		console.log "opc[#{ limit }] read: #{ !!read } turns: #{ turns }"
 		console.log "now: ", today.toDate()
 		if read
-			whenRead = moment( read ).startOf( 'day' )
+			whenRead = moment( read )
 			console.log "read: ", whenRead.toDate()
-			if @getNextTurn( collection.at(limit + 1) , today, whenRead )
+			if @isNextTurn( collection.at(limit + 1) , whenRead )
 				@set( 'turns', turns + 1 )
 				@save()
 				limit = Math.min( @get('turns'), collection.length - 1 )
@@ -79,11 +82,16 @@ class app.models.User extends Backbone.Model
 			console.log "show opc[#{limit}] "
 		opc
 
-	getNextTurn: (opc, today, whenRead) =>
-		hours = today.diff( whenRead, 'hours' )
-		sinceLastTurn = @get( 'priority' ) * hours / 6
-		console.log "hours since last turn #{sinceLastTurn}"
-		sinceLastTurn >= 1
+	getTurnDuration: (nextOPC, whenReadLastOPC) =>
+		now = moment()
+		fraction = now.diff( whenReadLastOPC, 'seconds' ) / SEED_TIME
+		priority = nextOPC.get( 'priority' ) / SEED_TIME
+		percent = fraction * 100 / priority
+		# console.log "Percent of turn #{percent}% so far."
+		percent
+
+	isNextTurn: (opc, whenRead) =>
+		@getTurnDuration(opc, whenRead) >= 100
 
 class app.collections.OPCCollection extends Backbone.Collection
 	model: (attributes, options) ->
@@ -109,33 +117,37 @@ class app.controllers.Main extends Backbone.Router
 		console.log "Init..."
 		@findOrCreateUser (user) =>
 			console.log "All is good."
-			app.user = @user =user
+			window.opcs = opcs = new app.collections.OPCCollection()
+			p = opcs.fetch()
+			for item in DATA
+				opc = new app.models.OPC( item )
+				opcs.add( opc ).save() unless opcs.contains( opc )
+
+			app.user = @user = user
 			splash = new SplashView( model: @user )
 			splash.render()
 			app.$el.append splash.el
 			menu = new Menu( model: @user )
 			menu.render()
 			app.$el.append menu.el
-			setTimeout( =>
-				splash.remove()
-				@showFrame()
-			, 1000 * 2 )
+			cont = =>
+				splash.on 'done', =>
+					@showFrame()
+			p.done( cont )
+			p.fail( cont )			
+			
+	showFrame: =>
+		opc = @user.getCurrentOPC( opcs )
+		console.log opc
+		frame = new FrameView( model: opc, user: @user )
+		frame.on( 'next', @newFrame )
+		frame.on( 'alerts', (x) -> app.controllers.alerts.show(x) )
+		frame.render()
+		app.$el.append frame.el
 
-	showFrame: =>	
-		window.opcs = opcs = new app.collections.OPCCollection()
-		p = opcs.fetch()
-		cont = =>
-			for item in DATA
-				opc = new app.models.OPC( item )
-				opcs.add( opc ).save() unless opcs.contains( opc )
-			opc = @user.getCurrentOPC( opcs )
-			console.log opc
-			frame = new FrameView( model: opc )
-			frame.on( 'alerts', (x) -> app.controllers.alerts.show(x) )
-			frame.render()
-			app.$el.append frame.el
-		p.done( cont )
-		p.fail( cont )
+	newFrame: (frame) =>
+		frame.remove()
+		@showFrame()
 
 	findOrCreateUser: (cb) ->
 		console.log "Find or create User..."

@@ -4,7 +4,7 @@ _ = require( 'underscore' )
 
 require( '../assets/css/frame.scss' )
 
-module.exports = class Frame extends View
+module.exports = class FrameView extends View
 	className: 'frame'
 	template: """
 	<div class="header">
@@ -34,9 +34,11 @@ module.exports = class Frame extends View
 		</div>
 	</div>
 	"""
+	initialize: ({@user}) ->
+		console.log "frame init with user: ", @user
 
 	events:
-		'click .footer': 'handleClickFooter'
+		'click .footer .notices': 'handleClickFooter'
 		'click .footer i': 'toggleSlide'
 	
 	render: =>
@@ -77,14 +79,21 @@ module.exports = class Frame extends View
 				@$('.read input').attr('checked', true)
 
 	updateTime: =>
-		now = moment()
-		hours = 24 - now.hours()
-		minutes = 60 - now.minutes()
-		left =  hours - ( 1 / 60 / minutes )
-		leftPercent = 100 - (left * 100 / 24)
-		@$('.timer').css( 'width', "#{ leftPercent }%" )
+		lastRead = @model.get( 'read' )
+		currentWidth = parseInt( @$('.timer').css( 'width').replace('px', '') )
+		if lastRead
+			currentIndex = @model.collection.indexOf( @model )
+			nextOPC = @model.collection.at( currentIndex + 1)
+			leftPercent = @user.getTurnDuration( nextOPC, moment( lastRead ) ) 
+			leftPercent = 100 if leftPercent > 100
+			@$('.timer').css( 'width', "#{ leftPercent }%" )
+			if leftPercent >= 100
+				@trigger( 'next', this )
+			else
+				setTimeout( @updateTime, 1000 * 1 )
+		else
+			setTimeout( @updateTime, 1000 * 1 )
 		@$( '.time' ).html( @getTime() )
-		setTimeout( @updateTime, 1000 * 1 )
 
 	timeOfDay: =>
 		read = moment( @model.get( 'read' ) )
@@ -92,7 +101,7 @@ module.exports = class Frame extends View
 		if read
 			hours = read.hours()
 		else 
-			hours = now.getHours()
+			hours = now.hours()
 		if hours <= 12 then "Morning"
 		else if 12 < hours < 18 then "Afternoon"
 		else if hours >= 18 then "Evening"
@@ -109,7 +118,9 @@ module.exports = class Frame extends View
 				transition: 'margin 0.5s'
 				marginLeft: '150px'
 				marginRight: '-150px'
+		false
 
 	handleClickFooter: (ev) =>
 		ev.preventDefault()
 		@trigger( 'alerts', @$('.footer .inner p') )
+		false

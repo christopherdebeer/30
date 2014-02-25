@@ -10,15 +10,22 @@
 	font-size: 3em;
 	font-weight: bold;
 
-	h1 {
+	.logo  {
 		position: absolute;
-		top: 45%;
-		font-size: 2em;
-		margin-top: -1em;
-		text-indent: -0.4em;
+		top: 30%;
 		left: 0;
 		right: 0;
-		
+
+		.triangle {
+			font-size: 5em;
+			font-weight: 100;
+			line-height: 0.6em;
+		}
+
+		h1 {
+			font-size: 2em;
+			margin: 0;
+		}
 		img { margin: 0.5em 0; }
 	}
 }
