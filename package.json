@@ -1,0 +1,31 @@
+{
+  "name": "84",
+  "version": "0.0.0",
+  "description": "ERROR: No README.md file found!",
+  "main": "app.coffee",
+  "dependencies": {
+    "jquery": "~2.1.0",
+    "underscore": "~1.6.0",
+    "backbone": "~1.1.2",
+    "backbone.localstorage": "~1.1.7",
+    "moment": "~2.5.1",
+    "sassify": "~0.1.2",
+    "jquery-sidr": "~0.1.1",
+    "page-slide": "~0.1.6"
+  },
+  "devDependencies": {
+    "coffeeify": "~0.6.0",
+    "beefy": "~1.1.0",
+    "browserify": "~3.30.1",
+    "watchify": "~0.6.1",
+    "cssify": "~0.4.2"
+  },
+  "scripts": {
+    "start": "beefy app.coffee:app.js --live -- -t coffeeify -t sassify",
+    "build": "browserify ./app.coffee -t coffeeify -t sassify > ./app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": "",
+  "author": "",
+  "license": "None"
+}

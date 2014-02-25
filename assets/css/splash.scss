@@ -1,0 +1,25 @@
+.splash {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	color: white;
+	background-color: black;
+	text-align: center;
+	font-size: 3em;
+	font-weight: bold;
+
+	h1 {
+		position: absolute;
+		top: 45%;
+		font-size: 2em;
+		margin-top: -1em;
+		text-indent: -0.4em;
+		left: 0;
+		right: 0;
+		
+		img { margin: 0.5em 0; }
+	}
+}
+

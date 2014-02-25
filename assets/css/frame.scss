@@ -1,0 +1,110 @@
+.frame {
+	font-weight: bold;
+	position: relative;
+	height: 100%;
+	background-color: white;
+
+
+	.header {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		background-color: white;
+		
+		.opcId { color: red; }
+		.hdiv {
+			border-bottom: 1px solid black;
+			margin: 0.4em -0.4em;
+		}
+		.icons {
+			float: right;
+			height: 2em;
+			margin: -.4em;
+			width: 7em;
+			background-color: black;
+			color: white;
+			line-height: 1.2em;
+			padding: 0.4em;
+			box-sizing: border-box;
+
+			i {
+				margin-left: 0.7em;
+				line-height: 1.2em;
+			}
+			i.fa-triangle { color: red; }
+		}
+		.timer {
+			height: 5px;
+			background-color: black;
+			width: 0%;
+			-webkit-transition:width 3s;
+			transition:width 3s;
+		}
+	}
+	
+	
+	.body {
+		position: absolute;
+		top: 7em;
+		bottom: 4em;
+		overflow: auto;
+		padding-top: 1em;
+		left: 0;
+		right: 0;
+		.read {
+			margin: 1em 0.4em;
+			font-size: 1.6em;
+			input {
+				width: 1.4em;
+				height: 1.4em;
+			}
+		}
+
+		.barcode {
+			padding: 0 0 1em;
+			width: 100%;
+		}
+		.message {
+			padding: 0.4em;
+			font-size: 2em;
+			
+		}
+	}
+	.footer {
+		margin-top: 2em;
+		cursor: pointer;
+		position: absolute;
+		bottom: 0;
+		left: 0;
+		right: 0;
+
+		.inner {
+			height: 4em;
+			display: none;
+		}
+		h4 {
+			background-color: black;
+			color: white;
+			margin: 0;
+			font-size: 1.4em;
+			padding: 1em;
+			font-weight: normal;
+
+			span {
+				float: right;
+			}
+		}
+		p {
+			font-size: 0.8em;
+			margin: 0.4em;
+		}
+	}
+}
+
+.frame .header .inner,
+.frame .footer .inner {
+	padding: 0.4em;
+	border-bottom: 1px solid black;
+	font-size: 1.6em;
+}
