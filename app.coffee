@@ -38,20 +38,38 @@ DATA = [{
 			"TIME Comrade,", 
 			"The Party is delighted to inform you that tomorrow will be the 2014 Ministry of Plenty Annual Party Census."]
 		priority: SEED_TIME / 24 / 60 / 3
-		},{
-		id: startId + 3
+		},
+		{message: "You have agreed to the Terms and Conditions. Hurray for The Party."},
+		{message: "The ministry of Love this week has increased your sugar rations to 29."},
+		{message: "Have you seen? Concern for eurasian civilians? Lack of support for our military? outright dissent? sarcastic laughter? Report though crime! Because its your patriotic duty."},
+		{message: "There is no Dissent in Oceania. Those who criticise Big Brother are merely confused."},
+		{message: "Unless your life is tightly controlled you will never be free."},
+		{message: "INGSOC: Love it or commit a thoughtcrime."},
+		{message: "2 Aeroplanes hit 2 Towers. 3 Buildings are demolished. because 2+2=5"},
+		{message: "What was your sugar intake in the last week? ________"},
+		{message: "Did you exceed that amount this week? Yes? No? "},
+		{message: "Production is up 600% this year. Everything is only getting better."},
+		{message: "Your sugar rations have been increased to 24! Ministrty of Love."},
+		{message: "The Anti Sex League wants you! Sign up:  _____ Show your support and appreciation."},
+		{message: "Census: Enter details."},
+		{message: "Have you seen this party member?"},
+		{message: "We all have a duty to look after our planet! Reduce your carbon footprint."},
+		{message: "#—— THIS IS THE 000000000. WE NEED TO FIND 00000000 0000000 CAN YOU HELP?"},
+		{message: "Have you seen? Concern for eurasian civilians? Lack of support for our military? outright dissent? sarcastic laughter? Report though crime! Because its your patriotic duty."},
+		{message: "The traitors are among us now. Be aware!"},
+		{message: "INTERNATIONAL THREAT: The Eurasian faction formerly known as Iran has developed nuclear capabilities that threaten your very livelihood. They have gone to far! "},
+		{message: "#—— 00000 00000 00000 000 0000 00000 0000 WILL YOU HELP?	"},
+		{message: "The Ministry of Love, this week have increased your sugar rations to 15."},
+		{
 		message: [ 
 			"TIME Comrade,", 
 			"The Party knows all, find consolation in that."]
-		priority: SEED_TIME / 24 / 60
 		},{
-		id: startId + 4
 		message: [ 
 			"TIME Comrade,", 
 			"Patience..."
-		]
-		priority: SEED_TIME / 24
-}]
+		]}
+]
 
 
 class app.models.User extends Backbone.Model
@@ -86,7 +104,7 @@ class app.models.User extends Backbone.Model
 		now = moment()
 		fraction = now.diff( whenReadLastOPC, 'seconds' ) / SEED_TIME
 		priority = nextOPC.get( 'priority' ) / SEED_TIME
-		percent = fraction * 100 / priority
+		percent = fraction * 100 / priority / ( 4 )
 		# console.log "Percent of turn #{percent}% so far."
 		percent
 
@@ -101,9 +119,8 @@ class app.collections.OPCCollection extends Backbone.Collection
 class app.models.OPC extends Backbone.Model
 	defaults:
 		message: ['default message']
-		id: 0
 		read: false
-		priority: 3
+		priority: SEED_TIME / 24 / 12 / 60 
 
 	url: '/opc'
 	localStorage: new Backbone.LocalStorage("opc-store")

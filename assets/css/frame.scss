@@ -13,7 +13,18 @@
 		right: 0;
 		background-color: white;
 		
-		.opcId { color: red; }
+		strong, .opcId { 
+			line-height: 1em;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+			display: inline-block;
+			overflow: hidden;
+			vertical-align: baseline;
+		}
+		.opcId {
+			color: red;
+			width: 5em;
+		}
 		.hdiv {
 			border-bottom: 1px solid black;
 			margin: 0.4em -0.4em;

@@ -52,7 +52,11 @@ module.exports = class FrameView extends View
 
 	tick: 1
 	outputMessage: =>
-		message = @model.get('message').map( (m) => m.replace( 'TIME', @timeOfDay() ) )
+		message = if typeof @model.get('message') == 'string'
+			[@model.get('message').replace( 'TIME', @timeOfDay() ) ]
+		else
+			@model.get('message').map( (m) => m.replace( 'TIME', @timeOfDay() ) )
+		
 		@model.set( 'message', message )
 		total = message.join().length
 		breaks = _.reduce( message, ((memo, item) ->
