@@ -22,6 +22,7 @@
 			padding: 1em;
 			text-align: center;
 			margin: 0 auto;
+			margin-top: 2em;
 		}
 		.triangle {
 			font-size: 12em;
@@ -40,7 +41,7 @@
 		.main {
 			color: #333;
 			font-style: italic;
-			margin-top: 8em;
+			margin-top: 4em;
 		}
 
 		.number {
@@ -66,7 +67,8 @@
 	$(function(){
 		$('button').click( function(ev){
 			ev.preventDefault();
-			$('.number').html( Math.floor(Math.random() * 10000000 ) );
+			$('.main p, .main button').remove();
+			$('.number').html( Math.floor(Math.random() * 10000 ) );
 		});
 	});
 	</script>
