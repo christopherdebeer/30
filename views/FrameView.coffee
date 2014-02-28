@@ -18,7 +18,7 @@ module.exports = class FrameView extends View
 			<div class="hdiv"></div>
 			<div><strong>D</strong> <span class="time"></span></div>
 		</div>
-		<div class="timer" data-percent="100"></div>
+		<div class="timer"></div>
 	</div>
 
 	<div class="body">
@@ -84,7 +84,6 @@ module.exports = class FrameView extends View
 
 	updateTime: =>
 		lastRead = @model.get( 'read' )
-		currentWidth = parseInt( @$('.timer').css( 'width').replace('px', '') )
 		if lastRead
 			currentIndex = @model.collection.indexOf( @model )
 			nextOPC = @model.collection.at( currentIndex + 1)
@@ -102,7 +101,7 @@ module.exports = class FrameView extends View
 	timeOfDay: =>
 		read = moment( @model.get( 'read' ) )
 		now = moment()
-		if read
+		if @model.get( 'read' )
 			hours = read.hours()
 		else 
 			hours = now.hours()
