@@ -6,6 +6,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 	<meta name="apple-mobile-web-app-capable" content="yes">
 	<meta name="apple-mobile-web-app-status-bar-style" content="black">
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
 </head>
 <body>
 	<style>
@@ -41,6 +42,14 @@
 			font-style: italic;
 			margin-top: 8em;
 		}
+
+		.number {
+			font-size: 3em;
+			font-weight: bold;
+			margin-top: 1em;
+			color: white;
+			font-style: normal;
+		}
 	</style>
 	<div class="container">
 		<div class="triangle">&#9651;</div>
@@ -48,8 +57,18 @@
 		<h2>Because 2014 is 30 years too late.</h2>
 		<div class="main">
 			<p>Currently in development.<br>To take part in the beta preview, take a ticket.</p>
-			<button onclick="alert('Your number is: ' + (Math.floor(Math.random() * 10000000 )))">Take a ticket</button>
+			<button>Take a ticket</button>
+			<div class="number"></div>
 		</div>
 	</div>
+
+	<script type="text/javascript">
+	$(function(){
+		$('button').click( function(ev){
+			ev.preventDefault();
+			$('.number').html( Math.floor(Math.random() * 10000000 ) );
+		});
+	});
+	</script>
 </body>
 </html>
