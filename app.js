@@ -158,7 +158,7 @@ app.models.User = (function(_super) {
     now = moment();
     fraction = now.diff(whenReadLastOPC, 'seconds') / SEED_TIME;
     priority = nextOPC.get('priority') / SEED_TIME;
-    percent = fraction * 100 / priority / 4.;
+    percent = fraction * 100 / priority / 2.;
     return percent;
   };
 
@@ -16679,7 +16679,6 @@ module.exports = FrameView = (function(_super) {
     FrameView.__super__.render.apply(this, arguments);
     this.outputMessage();
     this.model.set('read', +moment());
-    this.updateTime();
     return this;
   };
 
@@ -16725,6 +16724,7 @@ module.exports = FrameView = (function(_super) {
   FrameView.prototype.doneRendering = function() {
     this.model.save();
     this.model.set('read', +moment());
+    this.updateTime();
     return this.$('.read input').attr('checked', true);
   };
 
