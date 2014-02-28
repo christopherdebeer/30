@@ -31,28 +31,27 @@ DATA = [{
 		message: [ 
 			"Official Party Member Correspondence Device",
 			"OPMCD Uplinking...."]
-		priority: 1
 		},{
 		id: startId + 2
 		message: [ 
 			"TIME Comrade,", 
 			"The Party is delighted to inform you that tomorrow will be the 2014 Ministry of Plenty Annual Party Census."]
-		priority: SEED_TIME / 24 / 60 / 3
+		type: 'civil'
 		},
-		{message: "You have agreed to the Terms and Conditions. Hurray for The Party."},
-		{message: "The ministry of Love this week has increased your sugar rations to 29."},
+		{message: "You have agreed to the Terms and Conditions. Hurray for The Party.", type: 'info'},
+		{message: "The ministry of Love this week has increased your sugar rations to 29.", type: 'civil'},
 		{message: "Have you seen? Concern for eurasian civilians? Lack of support for our military? outright dissent? sarcastic laughter? Report though crime! Because its your patriotic duty."},
-		{message: "There is no Dissent in Oceania. Those who criticise Big Brother are merely confused."},
-		{message: "Unless your life is tightly controlled you will never be free."},
+		{message: "There is no Dissent in Oceania. Those who criticise Big Brother are merely confused.", type: 'info'},
+		{message: "Unless your life is tightly controlled you will never be free.", type: 'info'},
 		{message: "INGSOC: Love it or commit a thoughtcrime."},
 		{message: "2 Aeroplanes hit 2 Towers. 3 Buildings are demolished. because 2+2=5"},
 		{message: "What was your sugar intake in the last week? ________"},
-		{message: "Did you exceed that amount this week? Yes? No? "},
-		{message: "Production is up 600% this year. Everything is only getting better."},
-		{message: "Your sugar rations have been increased to 24! Ministrty of Love."},
+		{message: "Did you exceed that amount this week? Yes? No? ", type: 'civil'},
+		{message: "Production is up 600% this year. Everything is only getting better.", type: 'info'},
+		{message: "Your sugar rations have been increased to 24! Ministrty of Love.", type: 'civil'},
 		{message: "The Anti Sex League wants you! Sign up:  _____ Show your support and appreciation."},
-		{message: "Census: Enter details."},
-		{message: "Have you seen this party member?"},
+		{message: "Census: Enter details.", type: 'civil'},
+		{message: "Have you seen this party member?", type: 'info'},
 		{message: "We all have a duty to look after our planet! Reduce your carbon footprint."},
 		{message: "#—— THIS IS THE 000000000. WE NEED TO FIND 00000000 0000000 CAN YOU HELP?"},
 		{message: "Have you seen? Concern for eurasian civilians? Lack of support for our military? outright dissent? sarcastic laughter? Report though crime! Because its your patriotic duty."},
@@ -64,7 +63,8 @@ DATA = [{
 		message: [ 
 			"TIME Comrade,", 
 			"The Party knows all, find consolation in that."]
-		},{
+		}
+		type: 'info',{
 		message: [ 
 			"TIME Comrade,", 
 			"Patience..."
@@ -112,18 +112,32 @@ class app.models.User extends Backbone.Model
 		@getTurnDuration(opc, whenRead) >= 100
 
 class app.collections.OPCCollection extends Backbone.Collection
-	model: (attributes, options) ->
-		new app.models.OPC( attributes, options )
 	localStorage: new Backbone.LocalStorage("opc-store")
 
 class app.models.OPC extends Backbone.Model
 	defaults:
 		message: ['default message']
 		read: false
-		priority: SEED_TIME / 24 / 12 / 60 
-
+		priority: SEED_TIME / 24 / 12 / 60
+		className: 'default' 
 	url: '/opc'
 	localStorage: new Backbone.LocalStorage("opc-store")
+	
+
+class app.models.GeneralOPC extends app.models.OPC
+	constructor: ->
+		super
+		@set( 'className', 'general' )
+
+class app.models.CivilOPC extends app.models.OPC
+	constructor: ->
+		super
+		@set( 'className', 'civil' )
+
+class app.models.InformationalOPC extends app.models.OPC
+	constructor: ->
+		super
+		@set( 'className', 'info' )
 
 class app.controllers.Main extends Backbone.Router
 	routes:
@@ -137,7 +151,10 @@ class app.controllers.Main extends Backbone.Router
 			window.opcs = opcs = new app.collections.OPCCollection()
 			p = opcs.fetch()
 			for item in DATA
-				opc = new app.models.OPC( item )
+				opc = switch item.type
+					when 'info' then new app.models.InformationalOPC( item )
+					when 'civil' then new app.models.CivilOPC( item )
+					else new app.models.GeneralOPC( item )
 				opcs.add( opc ).save() unless opcs.contains( opc )
 
 			app.user = @user = user

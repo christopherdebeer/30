@@ -5,7 +5,7 @@ _ = require( 'underscore' )
 require( '../assets/css/frame.scss' )
 
 module.exports = class FrameView extends View
-	className: 'frame'
+	className: "frame"
 	template: """
 	<div class="header">
 		<div class="inner">
@@ -25,6 +25,9 @@ module.exports = class FrameView extends View
 		<img class="barcode" src="assets/barcode.png" />
 		<div class="message"></div>
 		<div class="read"><input disabled <%= read ? 'checked' : '' %> type="checkbox"> Reciept noted</div>
+		<div class="actions">
+			<div class="button">OK</div>
+		</div>
 	</div>
 	<div class="footer">
 		<h4><i class="fa fa-bars"></i> <span class="notices">Public Notices <strong>2</strong></span></h4>
@@ -40,10 +43,12 @@ module.exports = class FrameView extends View
 	events:
 		'click .footer .notices': 'handleClickFooter'
 		'click .footer i': 'toggleSlide'
+		'click .actions .button': 'handleClickAction'
 	
 	render: =>
 		super
 		@outputMessage()
+		@model.set( 'read', +moment() )
 		@updateTime()
 		this
 	
@@ -52,6 +57,7 @@ module.exports = class FrameView extends View
 
 	tick: 1
 	outputMessage: =>
+		@$el.addClass( @model.get('className') )
 		message = if typeof @model.get('message') == 'string'
 			[@model.get('message').replace( 'TIME', @timeOfDay() ) ]
 		else
@@ -66,21 +72,25 @@ module.exports = class FrameView extends View
 		breaks = breaks.slice( 1 )
 		#remove last
 		breaks = breaks.slice( 0, -1 )
-		if @model.get( 'read' )
-			@$('.message').html( message.join('<br/><br/>') )
-		else	
-			text = message.join('').slice( 0, @tick).split('')
-			for b in breaks
-				text.splice( b, 0, "<br/><br/>") unless text.length == 1
-			text = text.join('')
-			@$('.message').html( text )
-			@tick++
-			if @tick < total
-				setTimeout( @outputMessage, 1000 * 0.075 )
-			else
-				@model.set( 'read', +moment() )
-				@model.save()
-				@$('.read input').attr('checked', true)
+		# if @model.get( 'read' )
+		#	@$('.message').html( message.join('<br/><br/>') )
+		# else	
+		text = message.join('').slice( 0, @tick).split('')
+		for b in breaks
+			text.splice( b, 0, "<br/><br/>") unless text.length == 1
+		text = text.join('')
+		@$('.message').html( text )
+		@tick++
+		if @tick < total
+			setTimeout( @outputMessage, 1000 * 0.075 )
+		else
+			@doneRendering()
+
+	doneRendering: =>
+		@model.save()
+		@model.set( 'read', +moment() )
+		@$('.read input').attr('checked', true)
+		
 
 	updateTime: =>
 		lastRead = @model.get( 'read' )
@@ -91,8 +101,12 @@ module.exports = class FrameView extends View
 			leftPercent = 100 if leftPercent > 100
 			@$('.timer').css( 'width', "#{ leftPercent }%" )
 			if leftPercent >= 100
-				@trigger( 'next', this )
+				console.log "time elapsed"
+				@$el.addClass( 'read' )
+				@$( '.actions .button').click =>
+					@trigger( 'next', this )
 			else
+				console.log "time %:", leftPercent
 				setTimeout( @updateTime, 1000 * 1 )
 		else
 			setTimeout( @updateTime, 1000 * 1 )

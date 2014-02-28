@@ -5,13 +5,13 @@
 	transition: height 2s;
 	height: 100%;
 	background-color: white;
+	border-radius: 1em;
 
 	.header {
 		position: absolute;
 		top: 0;
 		left: 0;
 		right: 0;
-		background-color: white;
 		
 		strong, .opcId { 
 			line-height: 1em;
@@ -82,6 +82,19 @@
 			font-size: 2em;
 			
 		}
+
+		.button {
+			font-size: 1.4em;
+			border: 3px solid black;
+			padding: 0.75em;
+			width: 12em;
+			text-align: center;
+			display: block;
+			margin-left: 1em;
+			font-weight: bold;
+			font-family: sans-serif;
+			cursor: pointer;
+		}
 	}
 	.footer {
 		margin-top: 2em;
@@ -100,19 +113,35 @@
 			color: white;
 			margin: 0;
 			font-size: 1.4em;
-			padding: 1em;
 			font-weight: normal;
-
+			span, i { padding: 1em; }
 			span {
 				float: right;
 			}
+			i { width: 4em; }
 		}
 		p {
 			font-size: 0.8em;
 			margin: 0.4em;
 		}
 	}
+
+	&:not(.read) {
+		.actions { display: none; }
+	}
+
+	&.general {
+		background-color: #f0f2f3;
+	}
+	&.civil{
+		background-color: #f4fb8b;
+	}
+	&.info{
+		background-color: #bedeff;
+	}
 }
+
+
 
 .frame .header .inner,
 .frame .footer .inner {
