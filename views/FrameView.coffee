@@ -49,7 +49,6 @@ module.exports = class FrameView extends View
 		super
 		@outputMessage()
 		@model.set( 'read', +moment() )
-		@updateTime()
 		this
 	
 	getTime: ->
@@ -89,6 +88,7 @@ module.exports = class FrameView extends View
 	doneRendering: =>
 		@model.save()
 		@model.set( 'read', +moment() )
+		@updateTime()
 		@$('.read input').attr('checked', true)
 		
 

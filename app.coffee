@@ -104,7 +104,7 @@ class app.models.User extends Backbone.Model
 		now = moment()
 		fraction = now.diff( whenReadLastOPC, 'seconds' ) / SEED_TIME
 		priority = nextOPC.get( 'priority' ) / SEED_TIME
-		percent = fraction * 100 / priority / ( 4 )
+		percent = fraction * 100 / priority / ( 2 )
 		# console.log "Percent of turn #{percent}% so far."
 		percent
 

@@ -44,22 +44,25 @@ console.log("SEED_TIME is " + SEED_TIME);
 DATA = [
   {
     id: startId + 1,
-    message: ["Official Party Member Correspondence Device", "OPMCD Uplinking...."],
-    priority: 1
+    message: ["Official Party Member Correspondence Device", "OPMCD Uplinking...."]
   }, {
     id: startId + 2,
     message: ["TIME Comrade,", "The Party is delighted to inform you that tomorrow will be the 2014 Ministry of Plenty Annual Party Census."],
-    priority: SEED_TIME / 24 / 60 / 3
+    type: 'civil'
   }, {
-    message: "You have agreed to the Terms and Conditions. Hurray for The Party."
+    message: "You have agreed to the Terms and Conditions. Hurray for The Party.",
+    type: 'info'
   }, {
-    message: "The ministry of Love this week has increased your sugar rations to 29."
+    message: "The ministry of Love this week has increased your sugar rations to 29.",
+    type: 'civil'
   }, {
     message: "Have you seen? Concern for eurasian civilians? Lack of support for our military? outright dissent? sarcastic laughter? Report though crime! Because its your patriotic duty."
   }, {
-    message: "There is no Dissent in Oceania. Those who criticise Big Brother are merely confused."
+    message: "There is no Dissent in Oceania. Those who criticise Big Brother are merely confused.",
+    type: 'info'
   }, {
-    message: "Unless your life is tightly controlled you will never be free."
+    message: "Unless your life is tightly controlled you will never be free.",
+    type: 'info'
   }, {
     message: "INGSOC: Love it or commit a thoughtcrime."
   }, {
@@ -67,17 +70,22 @@ DATA = [
   }, {
     message: "What was your sugar intake in the last week? ________"
   }, {
-    message: "Did you exceed that amount this week? Yes? No? "
+    message: "Did you exceed that amount this week? Yes? No? ",
+    type: 'civil'
   }, {
-    message: "Production is up 600% this year. Everything is only getting better."
+    message: "Production is up 600% this year. Everything is only getting better.",
+    type: 'info'
   }, {
-    message: "Your sugar rations have been increased to 24! Ministrty of Love."
+    message: "Your sugar rations have been increased to 24! Ministrty of Love.",
+    type: 'civil'
   }, {
     message: "The Anti Sex League wants you! Sign up:  _____ Show your support and appreciation."
   }, {
-    message: "Census: Enter details."
+    message: "Census: Enter details.",
+    type: 'civil'
   }, {
-    message: "Have you seen this party member?"
+    message: "Have you seen this party member?",
+    type: 'info'
   }, {
     message: "We all have a duty to look after our planet! Reduce your carbon footprint."
   }, {
@@ -94,6 +102,8 @@ DATA = [
     message: "The Ministry of Love, this week have increased your sugar rations to 15."
   }, {
     message: ["TIME Comrade,", "The Party knows all, find consolation in that."]
+  }, {
+    type: 'info'
   }, {
     message: ["TIME Comrade,", "Patience..."]
   }
@@ -167,10 +177,6 @@ app.collections.OPCCollection = (function(_super) {
     return OPCCollection.__super__.constructor.apply(this, arguments);
   }
 
-  OPCCollection.prototype.model = function(attributes, options) {
-    return new app.models.OPC(attributes, options);
-  };
-
   OPCCollection.prototype.localStorage = new Backbone.LocalStorage("opc-store");
 
   return OPCCollection;
@@ -187,7 +193,8 @@ app.models.OPC = (function(_super) {
   OPC.prototype.defaults = {
     message: ['default message'],
     read: false,
-    priority: SEED_TIME / 24 / 12 / 60
+    priority: SEED_TIME / 24 / 12 / 60,
+    className: 'default'
   };
 
   OPC.prototype.url = '/opc';
@@ -197,6 +204,42 @@ app.models.OPC = (function(_super) {
   return OPC;
 
 })(Backbone.Model);
+
+app.models.GeneralOPC = (function(_super) {
+  __extends(GeneralOPC, _super);
+
+  function GeneralOPC() {
+    GeneralOPC.__super__.constructor.apply(this, arguments);
+    this.set('className', 'general');
+  }
+
+  return GeneralOPC;
+
+})(app.models.OPC);
+
+app.models.CivilOPC = (function(_super) {
+  __extends(CivilOPC, _super);
+
+  function CivilOPC() {
+    CivilOPC.__super__.constructor.apply(this, arguments);
+    this.set('className', 'civil');
+  }
+
+  return CivilOPC;
+
+})(app.models.OPC);
+
+app.models.InformationalOPC = (function(_super) {
+  __extends(InformationalOPC, _super);
+
+  function InformationalOPC() {
+    InformationalOPC.__super__.constructor.apply(this, arguments);
+    this.set('className', 'info');
+  }
+
+  return InformationalOPC;
+
+})(app.models.OPC);
 
 app.controllers.Main = (function(_super) {
   __extends(Main, _super);
@@ -222,7 +265,16 @@ app.controllers.Main = (function(_super) {
         p = opcs.fetch();
         for (_i = 0, _len = DATA.length; _i < _len; _i++) {
           item = DATA[_i];
-          opc = new app.models.OPC(item);
+          opc = (function() {
+            switch (item.type) {
+              case 'info':
+                return new app.models.InformationalOPC(item);
+              case 'civil':
+                return new app.models.CivilOPC(item);
+              default:
+                return new app.models.GeneralOPC(item);
+            }
+          })();
           if (!opcs.contains(opc)) {
             opcs.add(opc).save();
           }
@@ -373,13 +425,13 @@ var css = '.frame {\
   height: 0%;\
   transition: height 2s;\
   height: 100%;\
-  background-color: white; }\
+  background-color: white;\
+  border-radius: 1em; }\
   .frame .header {\
     position: absolute;\
     top: 0;\
     left: 0;\
-    right: 0;\
-    background-color: white; }\
+    right: 0; }\
     .frame .header strong, .frame .header .opcId {\
       line-height: 1em;\
       text-overflow: ellipsis;\
@@ -411,9 +463,9 @@ var css = '.frame {\
     .frame .header .timer {\
       height: 5px;\
       background-color: black;\
-      width: 0%;\
-      -webkit-transition: width 3s;\
-      transition: width 3s; }\
+      width: 100%;\
+      -webkit-transition: width 1s;\
+      transition: width 1s; }\
   .frame .body {\
     position: absolute;\
     top: 7em;\
@@ -434,6 +486,17 @@ var css = '.frame {\
     .frame .body .message {\
       padding: 0.4em;\
       font-size: 2em; }\
+    .frame .body .button {\
+      font-size: 1.4em;\
+      border: 3px solid black;\
+      padding: 0.75em;\
+      width: 12em;\
+      text-align: center;\
+      display: block;\
+      margin-left: 1em;\
+      font-weight: bold;\
+      font-family: sans-serif;\
+      cursor: pointer; }\
   .frame .footer {\
     margin-top: 2em;\
     cursor: pointer;\
@@ -449,13 +512,24 @@ var css = '.frame {\
       color: white;\
       margin: 0;\
       font-size: 1.4em;\
-      padding: 1em;\
       font-weight: normal; }\
+      .frame .footer h4 span, .frame .footer h4 i {\
+        padding: 1em; }\
       .frame .footer h4 span {\
         float: right; }\
+      .frame .footer h4 i {\
+        width: 4em; }\
     .frame .footer p {\
       font-size: 0.8em;\
       margin: 0.4em; }\
+  .frame:not(.read) .actions {\
+    display: none; }\
+  .frame.general {\
+    background-color: #f0f2f3; }\
+  .frame.civil {\
+    background-color: #f4fb8b; }\
+  .frame.info {\
+    background-color: #bedeff; }\
 \
 .frame .header .inner, .frame .footer .inner {\
   padding: 0.4em;\
@@ -16580,14 +16654,15 @@ module.exports = FrameView = (function(_super) {
     this.toggleSlide = __bind(this.toggleSlide, this);
     this.timeOfDay = __bind(this.timeOfDay, this);
     this.updateTime = __bind(this.updateTime, this);
+    this.doneRendering = __bind(this.doneRendering, this);
     this.outputMessage = __bind(this.outputMessage, this);
     this.render = __bind(this.render, this);
     return FrameView.__super__.constructor.apply(this, arguments);
   }
 
-  FrameView.prototype.className = 'frame';
+  FrameView.prototype.className = "frame";
 
-  FrameView.prototype.template = "<div class=\"header\">\n	<div class=\"inner\">\n		<div class=\"icons\">\n			<i class=\"fa fa-eye\"></i>\n			<i class=\"fa fa-bolt\"></i>\n			<i class=\"fa fa-triangle\">&#9650;</i>\n		</div>\n		<div><strong>OPC#</strong> <span class=\"opcId\"><%= id %></span></div>\n		<div class=\"hdiv\"></div>\n		<div><strong>D</strong> <span class=\"time\"></span></div>\n	</div>\n	<div class=\"timer\" data-percent=\"100\"></div>\n</div>\n\n<div class=\"body\">\n	<img class=\"barcode\" src=\"assets/barcode.png\" />\n	<div class=\"message\"></div>\n	<div class=\"read\"><input disabled <%= read ? 'checked' : '' %> type=\"checkbox\"> Reciept noted</div>\n</div>\n<div class=\"footer\">\n	<h4><i class=\"fa fa-bars\"></i> <span class=\"notices\">Public Notices <strong>2</strong></span></h4>\n	<div class=\"inner\">\n		<p>The Party does not negotiate with terrorists.</p>\n		<p>We continue to fight for what you believe.</p>\n	</div>\n</div>";
+  FrameView.prototype.template = "<div class=\"header\">\n	<div class=\"inner\">\n		<div class=\"icons\">\n			<i class=\"fa fa-eye\"></i>\n			<i class=\"fa fa-bolt\"></i>\n			<i class=\"fa fa-triangle\">&#9650;</i>\n		</div>\n		<div><strong>OPC#</strong> <span class=\"opcId\"><%= id %></span></div>\n		<div class=\"hdiv\"></div>\n		<div><strong>D</strong> <span class=\"time\"></span></div>\n	</div>\n	<div class=\"timer\"></div>\n</div>\n\n<div class=\"body\">\n	<img class=\"barcode\" src=\"assets/barcode.png\" />\n	<div class=\"message\"></div>\n	<div class=\"read\"><input disabled <%= read ? 'checked' : '' %> type=\"checkbox\"> Reciept noted</div>\n	<div class=\"actions\">\n		<div class=\"button\">OK</div>\n	</div>\n</div>\n<div class=\"footer\">\n	<h4><i class=\"fa fa-bars\"></i> <span class=\"notices\">Public Notices <strong>2</strong></span></h4>\n	<div class=\"inner\">\n		<p>The Party does not negotiate with terrorists.</p>\n		<p>We continue to fight for what you believe.</p>\n	</div>\n</div>";
 
   FrameView.prototype.initialize = function(_arg) {
     this.user = _arg.user;
@@ -16596,12 +16671,14 @@ module.exports = FrameView = (function(_super) {
 
   FrameView.prototype.events = {
     'click .footer .notices': 'handleClickFooter',
-    'click .footer i': 'toggleSlide'
+    'click .footer i': 'toggleSlide',
+    'click .actions .button': 'handleClickAction'
   };
 
   FrameView.prototype.render = function() {
     FrameView.__super__.render.apply(this, arguments);
     this.outputMessage();
+    this.model.set('read', +moment());
     this.updateTime();
     return this;
   };
@@ -16614,6 +16691,7 @@ module.exports = FrameView = (function(_super) {
 
   FrameView.prototype.outputMessage = function() {
     var b, breaks, message, text, total, _i, _len;
+    this.$el.addClass(this.model.get('className'));
     message = typeof this.model.get('message') === 'string' ? [this.model.get('message').replace('TIME', this.timeOfDay())] : this.model.get('message').map((function(_this) {
       return function(m) {
         return m.replace('TIME', _this.timeOfDay());
@@ -16627,33 +16705,32 @@ module.exports = FrameView = (function(_super) {
     }), [0]);
     breaks = breaks.slice(1);
     breaks = breaks.slice(0, -1);
-    if (this.model.get('read')) {
-      return this.$('.message').html(message.join('<br/><br/>'));
+    text = message.join('').slice(0, this.tick).split('');
+    for (_i = 0, _len = breaks.length; _i < _len; _i++) {
+      b = breaks[_i];
+      if (text.length !== 1) {
+        text.splice(b, 0, "<br/><br/>");
+      }
+    }
+    text = text.join('');
+    this.$('.message').html(text);
+    this.tick++;
+    if (this.tick < total) {
+      return setTimeout(this.outputMessage, 1000 * 0.075);
     } else {
-      text = message.join('').slice(0, this.tick).split('');
-      for (_i = 0, _len = breaks.length; _i < _len; _i++) {
-        b = breaks[_i];
-        if (text.length !== 1) {
-          text.splice(b, 0, "<br/><br/>");
-        }
-      }
-      text = text.join('');
-      this.$('.message').html(text);
-      this.tick++;
-      if (this.tick < total) {
-        return setTimeout(this.outputMessage, 1000 * 0.075);
-      } else {
-        this.model.set('read', +moment());
-        this.model.save();
-        return this.$('.read input').attr('checked', true);
-      }
+      return this.doneRendering();
     }
   };
 
+  FrameView.prototype.doneRendering = function() {
+    this.model.save();
+    this.model.set('read', +moment());
+    return this.$('.read input').attr('checked', true);
+  };
+
   FrameView.prototype.updateTime = function() {
-    var currentIndex, currentWidth, lastRead, leftPercent, nextOPC;
+    var currentIndex, lastRead, leftPercent, nextOPC;
     lastRead = this.model.get('read');
-    currentWidth = parseInt(this.$('.timer').css('width').replace('px', ''));
     if (lastRead) {
       currentIndex = this.model.collection.indexOf(this.model);
       nextOPC = this.model.collection.at(currentIndex + 1);
@@ -16663,8 +16740,15 @@ module.exports = FrameView = (function(_super) {
       }
       this.$('.timer').css('width', "" + leftPercent + "%");
       if (leftPercent >= 100) {
-        this.trigger('next', this);
+        console.log("time elapsed");
+        this.$el.addClass('read');
+        this.$('.actions .button').click((function(_this) {
+          return function() {
+            return _this.trigger('next', _this);
+          };
+        })(this));
       } else {
+        console.log("time %:", leftPercent);
         setTimeout(this.updateTime, 1000 * 1);
       }
     } else {
@@ -16677,7 +16761,7 @@ module.exports = FrameView = (function(_super) {
     var hours, now, read;
     read = moment(this.model.get('read'));
     now = moment();
-    if (read) {
+    if (this.model.get('read')) {
       hours = read.hours();
     } else {
       hours = now.hours();
