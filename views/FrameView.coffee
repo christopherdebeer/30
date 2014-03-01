@@ -47,12 +47,15 @@ module.exports = class FrameView extends View
 	
 	render: =>
 		super
+		@getTime()
 		@outputMessage()
 		@model.set( 'read', +moment() )
 		this
 	
 	getTime: ->
-		 new Date().toString().split('GMT')[0]
+		 time = new Date().toString().split('GMT')[0]
+		 @$( '.time' ).html( time )
+		 setTimeout( @getTime, 1000 * 1 )
 
 	tick: 1
 	outputMessage: =>
@@ -110,7 +113,6 @@ module.exports = class FrameView extends View
 				setTimeout( @updateTime, 1000 * 1 )
 		else
 			setTimeout( @updateTime, 1000 * 1 )
-		@$( '.time' ).html( @getTime() )
 
 	timeOfDay: =>
 		read = moment( @model.get( 'read' ) )
