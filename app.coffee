@@ -19,6 +19,7 @@ window.app = app =
 FrameView = require( './views/FrameView.coffee')
 SplashView = require( './views/SplashView.coffee')
 AlertView = require( './views/AlertView.coffee')
+MenuView = require( './views/MenuView.coffee')
 View = require( './views/BaseView.coffee')
 
 startId = 3354234567
@@ -161,7 +162,7 @@ class app.controllers.Main extends Backbone.Router
 			splash = new SplashView( model: @user )
 			splash.render()
 			app.$el.append splash.el
-			menu = new Menu( model: @user )
+			menu = new MenuView( model: @user )
 			menu.render()
 			app.$el.append menu.el
 			cont = =>
@@ -175,7 +176,6 @@ class app.controllers.Main extends Backbone.Router
 		console.log opc
 		frame = new FrameView( model: opc, user: @user )
 		frame.on( 'next', @newFrame )
-		frame.on( 'alerts', (x) -> app.controllers.alerts.show(x) )
 		frame.render()
 		app.$el.append frame.el
 
@@ -193,22 +193,7 @@ class app.controllers.Main extends Backbone.Router
 			user.save()
 			cb( user )
 
-class Menu extends View
-	className: 'menu'
-	template: """
-		<ul>
-			<li class="disabled">ID: 42342678</li>
-			<li class="disabled">Work</li>
-			<li class="start-over">Start Over</li>
-		</ul>
-	"""
-	events:
-		'click .start-over': 'handleClickStartOver'
 
-	handleClickStartOver: ->
-		if confirm( 'The Party comends your desire to start over. Are you sure?' )
-			localStorage.clear()
-			document.location = document.location
 
 class app.controllers.Alerts
 	show: (objects) ->

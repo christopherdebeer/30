@@ -16,7 +16,7 @@ module.exports = class FrameView extends View
 			</div>
 			<div><strong>OPC#</strong> <span class="opcId"><%= id %></span></div>
 			<div class="hdiv"></div>
-			<div><strong>D</strong> <span class="time"></span></div>
+			<div class="second-row"><strong>D</strong> <span class="time"></span></div>
 		</div>
 		<div class="timer"></div>
 	</div>
@@ -30,19 +30,14 @@ module.exports = class FrameView extends View
 		</div>
 	</div>
 	<div class="footer">
-		<h4><i class="fa fa-bars"></i> <span class="notices">Public Notices <strong>2</strong></span></h4>
-		<div class="inner">
-			<p>The Party does not negotiate with terrorists.</p>
-			<p>We continue to fight for what you believe.</p>
-		</div>
+		<div class="menu-button"><i class="fa fa-bars"></i></div>
 	</div>
 	"""
 	initialize: ({@user}) ->
 		console.log "frame init with user: ", @user
 
 	events:
-		'click .footer .notices': 'handleClickFooter'
-		'click .footer i': 'toggleSlide'
+		'click .footer .menu-button': 'toggleSlide'
 		'click .actions .button': 'handleClickAction'
 	
 	render: =>
@@ -137,9 +132,4 @@ module.exports = class FrameView extends View
 				transition: 'margin 0.5s'
 				marginLeft: '150px'
 				marginRight: '-150px'
-		false
-
-	handleClickFooter: (ev) =>
-		ev.preventDefault()
-		@trigger( 'alerts', @$('.footer .inner p') )
 		false

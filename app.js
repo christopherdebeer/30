@@ -1,5 +1,5 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var $, AlertView, Backbone, DATA, FrameView, Menu, SEED_TIME, SplashView, View, app, jQuery, moment, startId, _,
+var $, AlertView, Backbone, DATA, FrameView, MenuView, SEED_TIME, SplashView, View, app, jQuery, moment, startId, _,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -32,6 +32,8 @@ FrameView = require('./views/FrameView.coffee');
 SplashView = require('./views/SplashView.coffee');
 
 AlertView = require('./views/AlertView.coffee');
+
+MenuView = require('./views/MenuView.coffee');
 
 View = require('./views/BaseView.coffee');
 
@@ -285,7 +287,7 @@ app.controllers.Main = (function(_super) {
         });
         splash.render();
         app.$el.append(splash.el);
-        menu = new Menu({
+        menu = new MenuView({
           model: _this.user
         });
         menu.render();
@@ -310,9 +312,6 @@ app.controllers.Main = (function(_super) {
       user: this.user
     });
     frame.on('next', this.newFrame);
-    frame.on('alerts', function(x) {
-      return app.controllers.alerts.show(x);
-    });
     frame.render();
     return app.$el.append(frame.el);
   };
@@ -342,32 +341,6 @@ app.controllers.Main = (function(_super) {
   return Main;
 
 })(Backbone.Router);
-
-Menu = (function(_super) {
-  __extends(Menu, _super);
-
-  function Menu() {
-    return Menu.__super__.constructor.apply(this, arguments);
-  }
-
-  Menu.prototype.className = 'menu';
-
-  Menu.prototype.template = "<ul>\n	<li class=\"disabled\">ID: 42342678</li>\n	<li class=\"disabled\">Work</li>\n	<li class=\"start-over\">Start Over</li>\n</ul>";
-
-  Menu.prototype.events = {
-    'click .start-over': 'handleClickStartOver'
-  };
-
-  Menu.prototype.handleClickStartOver = function() {
-    if (confirm('The Party comends your desire to start over. Are you sure?')) {
-      localStorage.clear();
-      return document.location = document.location;
-    }
-  };
-
-  return Menu;
-
-})(View);
 
 app.controllers.Alerts = (function() {
   function Alerts() {}
@@ -403,7 +376,7 @@ $(function() {
 });
 
 
-},{"./assets/css/style.scss":5,"./views/AlertView.coffee":15,"./views/BaseView.coffee":16,"./views/FrameView.coffee":17,"./views/SplashView.coffee":18,"backbone":8,"backbone.localstorage":6,"cssify":9,"jquery":10,"moment":11,"underscore":14}],2:[function(require,module,exports){
+},{"./assets/css/style.scss":5,"./views/AlertView.coffee":15,"./views/BaseView.coffee":16,"./views/FrameView.coffee":17,"./views/MenuView.coffee":18,"./views/SplashView.coffee":19,"backbone":8,"backbone.localstorage":6,"cssify":9,"jquery":10,"moment":11,"underscore":14}],2:[function(require,module,exports){
 var css = '.alert {\
   position: absolute;\
   top: 0;\
@@ -432,7 +405,7 @@ var css = '.frame {\
     top: 0;\
     left: 0;\
     right: 0; }\
-    .frame .header strong, .frame .header .opcId {\
+    .frame .header strong, .frame .header .opcId, .frame .header span {\
       line-height: 1em;\
       text-overflow: ellipsis;\
       white-space: nowrap;\
@@ -443,29 +416,30 @@ var css = '.frame {\
       color: red;\
       width: 5em; }\
     .frame .header .hdiv {\
-      border-bottom: 1px solid black;\
-      margin: 0.4em -0.4em; }\
+      border-bottom: 2px solid black;\
+      margin: 0.2em -0.4em; }\
     .frame .header .icons {\
       float: right;\
       height: 2em;\
       margin: -.4em;\
       width: 7em;\
-      background-color: black;\
       color: white;\
       line-height: 1.2em;\
       padding: 0.4em;\
-      box-sizing: border-box; }\
+      box-sizing: border-box;\
+      border-left: 2px solid black; }\
       .frame .header .icons i {\
         margin-left: 0.7em;\
-        line-height: 1.2em; }\
-      .frame .header .icons i.fa-triangle {\
-        color: red; }\
+        line-height: 1.2em;\
+        color: black; }\
     .frame .header .timer {\
       height: 5px;\
       background-color: black;\
-      width: 100%;\
+      width: 0%;\
       -webkit-transition: width 1s;\
       transition: width 1s; }\
+    .frame .header .second-row {\
+      padding-top: 0.2em; }\
   .frame .body {\
     position: absolute;\
     top: 7em;\
@@ -489,17 +463,16 @@ var css = '.frame {\
     .frame .body .button {\
       font-size: 1.4em;\
       border: 3px solid black;\
-      padding: 0.75em;\
+      padding: 0.8em;\
       width: 12em;\
       text-align: center;\
       display: block;\
-      margin-left: 1em;\
+      margin: 0 auto;\
       font-weight: bold;\
       font-family: sans-serif;\
       cursor: pointer; }\
   .frame .footer {\
     margin-top: 2em;\
-    cursor: pointer;\
     position: absolute;\
     bottom: 0;\
     left: 0;\
@@ -507,21 +480,14 @@ var css = '.frame {\
     .frame .footer .inner {\
       height: 4em;\
       display: none; }\
-    .frame .footer h4 {\
-      background-color: black;\
-      color: white;\
+    .frame .footer .menu-button {\
+      color: black;\
       margin: 0;\
-      font-size: 1.4em;\
-      font-weight: normal; }\
-      .frame .footer h4 span, .frame .footer h4 i {\
-        padding: 1em; }\
-      .frame .footer h4 span {\
-        float: right; }\
-      .frame .footer h4 i {\
-        width: 4em; }\
-    .frame .footer p {\
-      font-size: 0.8em;\
-      margin: 0.4em; }\
+      font-size: 2em;\
+      font-weight: normal;\
+      padding: 0.6em;\
+      width: 1em;\
+      cursor: pointer; }\
   .frame:not(.read) .actions {\
     display: none; }\
   .frame.general {\
@@ -533,8 +499,9 @@ var css = '.frame {\
 \
 .frame .header .inner, .frame .footer .inner {\
   padding: 0.4em;\
-  border-bottom: 1px solid black;\
-  font-size: 1.6em; }\
+  border-bottom: 2px solid black;\
+  font-size: 1.6em;\
+  padding-bottom: 0; }\
 ';(require('sassify'))(css); module.exports = css;
 },{"sassify":12}],4:[function(require,module,exports){
 var css = '.splash {\
@@ -605,6 +572,8 @@ body {\
       .menu ul li.disabled {\
         cursor: default;\
         color: #555; }\
+      .menu ul li.current {\
+        font-weight: bold; }\
 ';(require('sassify'))(css); module.exports = css;
 },{"sassify":12}],6:[function(require,module,exports){
 /**
@@ -16650,7 +16619,6 @@ module.exports = FrameView = (function(_super) {
   __extends(FrameView, _super);
 
   function FrameView() {
-    this.handleClickFooter = __bind(this.handleClickFooter, this);
     this.toggleSlide = __bind(this.toggleSlide, this);
     this.timeOfDay = __bind(this.timeOfDay, this);
     this.updateTime = __bind(this.updateTime, this);
@@ -16662,7 +16630,7 @@ module.exports = FrameView = (function(_super) {
 
   FrameView.prototype.className = "frame";
 
-  FrameView.prototype.template = "<div class=\"header\">\n	<div class=\"inner\">\n		<div class=\"icons\">\n			<i class=\"fa fa-eye\"></i>\n			<i class=\"fa fa-bolt\"></i>\n			<i class=\"fa fa-triangle\">&#9650;</i>\n		</div>\n		<div><strong>OPC#</strong> <span class=\"opcId\"><%= id %></span></div>\n		<div class=\"hdiv\"></div>\n		<div><strong>D</strong> <span class=\"time\"></span></div>\n	</div>\n	<div class=\"timer\"></div>\n</div>\n\n<div class=\"body\">\n	<img class=\"barcode\" src=\"assets/barcode.png\" />\n	<div class=\"message\"></div>\n	<div class=\"read\"><input disabled <%= read ? 'checked' : '' %> type=\"checkbox\"> Reciept noted</div>\n	<div class=\"actions\">\n		<div class=\"button\">OK</div>\n	</div>\n</div>\n<div class=\"footer\">\n	<h4><i class=\"fa fa-bars\"></i> <span class=\"notices\">Public Notices <strong>2</strong></span></h4>\n	<div class=\"inner\">\n		<p>The Party does not negotiate with terrorists.</p>\n		<p>We continue to fight for what you believe.</p>\n	</div>\n</div>";
+  FrameView.prototype.template = "<div class=\"header\">\n	<div class=\"inner\">\n		<div class=\"icons\">\n			<i class=\"fa fa-eye\"></i>\n			<i class=\"fa fa-bolt\"></i>\n			<i class=\"fa fa-triangle\">&#9650;</i>\n		</div>\n		<div><strong>OPC#</strong> <span class=\"opcId\"><%= id %></span></div>\n		<div class=\"hdiv\"></div>\n		<div class=\"second-row\"><strong>D</strong> <span class=\"time\"></span></div>\n	</div>\n	<div class=\"timer\"></div>\n</div>\n\n<div class=\"body\">\n	<img class=\"barcode\" src=\"assets/barcode.png\" />\n	<div class=\"message\"></div>\n	<div class=\"read\"><input disabled <%= read ? 'checked' : '' %> type=\"checkbox\"> Reciept noted</div>\n	<div class=\"actions\">\n		<div class=\"button\">OK</div>\n	</div>\n</div>\n<div class=\"footer\">\n	<div class=\"menu-button\"><i class=\"fa fa-bars\"></i></div>\n</div>";
 
   FrameView.prototype.initialize = function(_arg) {
     this.user = _arg.user;
@@ -16670,20 +16638,23 @@ module.exports = FrameView = (function(_super) {
   };
 
   FrameView.prototype.events = {
-    'click .footer .notices': 'handleClickFooter',
-    'click .footer i': 'toggleSlide',
+    'click .footer .menu-button': 'toggleSlide',
     'click .actions .button': 'handleClickAction'
   };
 
   FrameView.prototype.render = function() {
     FrameView.__super__.render.apply(this, arguments);
+    this.getTime();
     this.outputMessage();
     this.model.set('read', +moment());
     return this;
   };
 
   FrameView.prototype.getTime = function() {
-    return new Date().toString().split('GMT')[0];
+    var time;
+    time = new Date().toString().split('GMT')[0];
+    this.$('.time').html(time);
+    return setTimeout(this.getTime, 1000 * 1);
   };
 
   FrameView.prototype.tick = 1;
@@ -16742,19 +16713,18 @@ module.exports = FrameView = (function(_super) {
       if (leftPercent >= 100) {
         console.log("time elapsed");
         this.$el.addClass('read');
-        this.$('.actions .button').click((function(_this) {
+        return this.$('.actions .button').click((function(_this) {
           return function() {
             return _this.trigger('next', _this);
           };
         })(this));
       } else {
         console.log("time %:", leftPercent);
-        setTimeout(this.updateTime, 1000 * 1);
+        return setTimeout(this.updateTime, 1000 * 1);
       }
     } else {
-      setTimeout(this.updateTime, 1000 * 1);
+      return setTimeout(this.updateTime, 1000 * 1);
     }
-    return this.$('.time').html(this.getTime());
   };
 
   FrameView.prototype.timeOfDay = function() {
@@ -16793,18 +16763,46 @@ module.exports = FrameView = (function(_super) {
     return false;
   };
 
-  FrameView.prototype.handleClickFooter = function(ev) {
-    ev.preventDefault();
-    this.trigger('alerts', this.$('.footer .inner p'));
-    return false;
-  };
-
   return FrameView;
 
 })(View);
 
 
 },{"../assets/css/frame.scss":3,"./BaseView.coffee":16,"moment":11,"underscore":14}],18:[function(require,module,exports){
+var MenuView, View,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+View = require('./BaseView.coffee');
+
+module.exports = MenuView = (function(_super) {
+  __extends(MenuView, _super);
+
+  function MenuView() {
+    return MenuView.__super__.constructor.apply(this, arguments);
+  }
+
+  MenuView.prototype.className = 'menu';
+
+  MenuView.prototype.template = "<ul>\n	<li class=\"disabled\">ID: 42342678</li>\n	<li class=\"current\">Notifications</li>\n	<li class=\"disabled\">Inventory</li>\n	<li class=\"start-over\">Start Over</li>\n</ul>";
+
+  MenuView.prototype.events = {
+    'click .start-over': 'handleClickStartOver'
+  };
+
+  MenuView.prototype.handleClickStartOver = function() {
+    if (confirm('The Party comends your desire to start over. Are you sure?')) {
+      localStorage.clear();
+      return document.location = document.location;
+    }
+  };
+
+  return MenuView;
+
+})(View);
+
+
+},{"./BaseView.coffee":16}],19:[function(require,module,exports){
 var SplashView, View,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
