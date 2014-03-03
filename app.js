@@ -1,5 +1,5 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var $, AlertView, Backbone, DATA, FrameView, MenuView, SEED_TIME, SplashView, View, app, jQuery, moment, startId, _,
+var $, AlertView, Backbone, DATA, FrameView, MainController, MenuView, OPCCollection, OPCModel, SEED_TIME, SplashView, UserModel, View, jQuery, moment, startId, _,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -20,13 +20,6 @@ Backbone.LocalStorage = require("backbone.localstorage");
 
 Backbone.$ = $;
 
-window.app = app = {
-  models: {},
-  views: {},
-  controllers: {},
-  collections: {}
-};
-
 FrameView = require('./views/FrameView.coffee');
 
 SplashView = require('./views/SplashView.coffee');
@@ -45,10 +38,8 @@ console.log("SEED_TIME is " + SEED_TIME);
 
 DATA = [
   {
-    id: startId + 1,
     message: ["Official Party Member Correspondence Device", "OPMCD Uplinking...."]
   }, {
-    id: startId + 2,
     message: ["TIME Comrade,", "The Party is delighted to inform you that tomorrow will be the 2014 Ministry of Plenty Annual Party Census."],
     type: 'civil'
   }, {
@@ -111,40 +102,41 @@ DATA = [
   }
 ];
 
-app.models.User = (function(_super) {
-  __extends(User, _super);
+UserModel = (function(_super) {
+  __extends(UserModel, _super);
 
-  function User() {
+  function UserModel() {
     this.isNextTurn = __bind(this.isNextTurn, this);
     this.getTurnDuration = __bind(this.getTurnDuration, this);
     this.getCurrentOPC = __bind(this.getCurrentOPC, this);
-    return User.__super__.constructor.apply(this, arguments);
+    return UserModel.__super__.constructor.apply(this, arguments);
   }
 
-  User.prototype.defaults = {
+  UserModel.prototype.defaults = {
     firstName: '',
     lastName: '',
     start: +moment().startOf('day'),
     turns: 0
   };
 
-  User.prototype.url = '/user';
+  UserModel.prototype.url = '/user';
 
-  User.prototype.localStorage = new Backbone.LocalStorage("user-store");
+  UserModel.prototype.localStorage = new Backbone.LocalStorage("user-store");
 
-  User.prototype.getCurrentOPC = function(collection) {
-    var limit, opc, read, today, turns, whenRead;
+  UserModel.prototype.getCurrentOPC = function(collection) {
+    var limit, opc, read, seen, today, turns, whenSeen;
     turns = this.get('turns');
     today = moment();
     limit = Math.min(turns, collection.length - 1);
     opc = collection.at(limit);
+    seen = opc.get('seen');
     read = opc.get('read');
-    console.log("opc[" + limit + "] read: " + (!!read) + " turns: " + turns);
+    console.log("opc[" + limit + "] read: " + (!!read) + " seen: " + (!!seen) + " turns: " + turns);
     console.log("now: ", today.toDate());
     if (read) {
-      whenRead = moment(read);
-      console.log("read: ", whenRead.toDate());
-      if (this.isNextTurn(collection.at(limit + 1), whenRead)) {
+      whenSeen = moment(seen);
+      console.log("seen: ", whenSeen.toDate());
+      if (this.isNextTurn(collection.at(limit + 1), whenSeen)) {
         this.set('turns', turns + 1);
         this.save();
         limit = Math.min(this.get('turns'), collection.length - 1);
@@ -155,7 +147,7 @@ app.models.User = (function(_super) {
     return opc;
   };
 
-  User.prototype.getTurnDuration = function(nextOPC, whenReadLastOPC) {
+  UserModel.prototype.getTurnDuration = function(nextOPC, whenReadLastOPC) {
     var fraction, now, percent, priority;
     now = moment();
     fraction = now.diff(whenReadLastOPC, 'seconds') / SEED_TIME;
@@ -164,15 +156,15 @@ app.models.User = (function(_super) {
     return percent;
   };
 
-  User.prototype.isNextTurn = function(opc, whenRead) {
+  UserModel.prototype.isNextTurn = function(opc, whenRead) {
     return this.getTurnDuration(opc, whenRead) >= 100;
   };
 
-  return User;
+  return UserModel;
 
 })(Backbone.Model);
 
-app.collections.OPCCollection = (function(_super) {
+OPCCollection = (function(_super) {
   __extends(OPCCollection, _super);
 
   function OPCCollection() {
@@ -185,193 +177,140 @@ app.collections.OPCCollection = (function(_super) {
 
 })(Backbone.Collection);
 
-app.models.OPC = (function(_super) {
-  __extends(OPC, _super);
+OPCModel = (function(_super) {
+  __extends(OPCModel, _super);
 
-  function OPC() {
-    return OPC.__super__.constructor.apply(this, arguments);
+  function OPCModel() {
+    return OPCModel.__super__.constructor.apply(this, arguments);
   }
 
-  OPC.prototype.defaults = {
+  OPCModel.prototype.defaults = {
     message: ['default message'],
     read: false,
+    seen: false,
     priority: SEED_TIME / 24 / 12 / 60,
-    className: 'default'
+    type: 'general'
   };
 
-  OPC.prototype.url = '/opc';
+  OPCModel.prototype.url = '/opc';
 
-  OPC.prototype.localStorage = new Backbone.LocalStorage("opc-store");
+  OPCModel.prototype.localStorage = new Backbone.LocalStorage("opc-store");
 
-  return OPC;
+  return OPCModel;
 
 })(Backbone.Model);
 
-app.models.GeneralOPC = (function(_super) {
-  __extends(GeneralOPC, _super);
+MainController = (function(_super) {
+  __extends(MainController, _super);
 
-  function GeneralOPC() {
-    GeneralOPC.__super__.constructor.apply(this, arguments);
-    this.set('className', 'general');
-  }
-
-  return GeneralOPC;
-
-})(app.models.OPC);
-
-app.models.CivilOPC = (function(_super) {
-  __extends(CivilOPC, _super);
-
-  function CivilOPC() {
-    CivilOPC.__super__.constructor.apply(this, arguments);
-    this.set('className', 'civil');
-  }
-
-  return CivilOPC;
-
-})(app.models.OPC);
-
-app.models.InformationalOPC = (function(_super) {
-  __extends(InformationalOPC, _super);
-
-  function InformationalOPC() {
-    InformationalOPC.__super__.constructor.apply(this, arguments);
-    this.set('className', 'info');
-  }
-
-  return InformationalOPC;
-
-})(app.models.OPC);
-
-app.controllers.Main = (function(_super) {
-  __extends(Main, _super);
-
-  function Main() {
+  function MainController() {
+    this.findOrCreateUser = __bind(this.findOrCreateUser, this);
     this.newFrame = __bind(this.newFrame, this);
     this.showFrame = __bind(this.showFrame, this);
-    return Main.__super__.constructor.apply(this, arguments);
+    this.init = __bind(this.init, this);
+    return MainController.__super__.constructor.apply(this, arguments);
   }
 
-  Main.prototype.routes = {
+  MainController.prototype.routes = {
     '': 'init'
   };
 
-  Main.prototype.init = function() {
-    app.$el = $('body');
+  MainController.prototype.init = function() {
+    this.app = {
+      $el: $('body')
+    };
     console.log("Init...");
     return this.findOrCreateUser((function(_this) {
-      return function(user) {
-        var cont, item, menu, opc, opcs, p, splash, _i, _len;
+      return function() {
+        var cont, opcs, p;
         console.log("All is good.");
-        window.opcs = opcs = new app.collections.OPCCollection();
+        console.log;
+        window.opcs = opcs = new OPCCollection();
         p = opcs.fetch();
-        for (_i = 0, _len = DATA.length; _i < _len; _i++) {
-          item = DATA[_i];
-          opc = (function() {
-            switch (item.type) {
-              case 'info':
-                return new app.models.InformationalOPC(item);
-              case 'civil':
-                return new app.models.CivilOPC(item);
-              default:
-                return new app.models.GeneralOPC(item);
-            }
-          })();
-          if (!opcs.contains(opc)) {
-            opcs.add(opc).save();
-          }
-        }
-        app.user = _this.user = user;
-        splash = new SplashView({
-          model: _this.user
-        });
-        splash.render();
-        app.$el.append(splash.el);
-        menu = new MenuView({
-          model: _this.user
-        });
-        menu.render();
-        app.$el.append(menu.el);
         cont = function() {
+          var i, item, menu, opc, splash, _i, _len;
+          console.log(opcs);
+          for (i = _i = 0, _len = DATA.length; _i < _len; i = ++_i) {
+            item = DATA[i];
+            item.id = i;
+            opc = new OPCModel(item);
+            if (!opcs.contains(opc)) {
+              opcs.add(opc).save();
+            } else {
+              console.log('not adding existing opc:', opc);
+            }
+          }
+          splash = new SplashView({
+            model: _this.user
+          });
+          splash.render();
+          _this.app.$el.append(splash.el);
+          menu = new MenuView({
+            model: _this.user
+          });
+          menu.render();
+          _this.app.$el.append(menu.el);
           return splash.on('done', function() {
             return _this.showFrame();
           });
         };
         p.done(cont);
-        return p.fail(cont);
+        return p.fail(function() {
+          console.log("OPCS fetch failed....");
+          return cont();
+        });
       };
     })(this));
   };
 
-  Main.prototype.showFrame = function() {
+  MainController.prototype.showFrame = function() {
     var frame, opc;
     opc = this.user.getCurrentOPC(opcs);
-    console.log(opc);
+    console.log("Show frame...", opc.get('id'));
     frame = new FrameView({
       model: opc,
       user: this.user
     });
     frame.on('next', this.newFrame);
     frame.render();
-    return app.$el.append(frame.el);
+    return this.app.$el.append(frame.el);
   };
 
-  Main.prototype.newFrame = function(frame) {
+  MainController.prototype.newFrame = function(frame) {
     frame.remove();
     return this.showFrame();
   };
 
-  Main.prototype.findOrCreateUser = function(cb) {
-    var init, user;
+  MainController.prototype.findOrCreateUser = function(cb) {
+    var init;
     console.log("Find or create User...");
-    user = new app.models.User({
+    this.user = new UserModel({
       id: 1
     });
-    init = user.fetch();
-    init.done(function() {
-      return cb(user);
-    });
-    return init.fail(function() {
-      console.log("User not found. Creating...");
-      user.save();
-      return cb(user);
-    });
+    init = this.user.fetch();
+    init.done((function(_this) {
+      return function() {
+        return cb();
+      };
+    })(this));
+    return init.fail((function(_this) {
+      return function() {
+        console.log("User not found. Creating...");
+        _this.user.save();
+        return cb();
+      };
+    })(this));
   };
 
-  return Main;
+  return MainController;
 
 })(Backbone.Router);
 
-app.controllers.Alerts = (function() {
-  function Alerts() {}
-
-  Alerts.prototype.show = function(objects) {
-    var alert, model, msgs, o;
-    msgs = (function() {
-      var _i, _len, _results;
-      _results = [];
-      for (_i = 0, _len = objects.length; _i < _len; _i++) {
-        o = objects[_i];
-        _results.push($(o).text());
-      }
-      return _results;
-    })();
-    model = new Backbone.Model({
-      messages: msgs
-    });
-    alert = new AlertView({
-      model: model
-    });
-    return $('body').append(alert.render().$el);
-  };
-
-  return Alerts;
-
-})();
-
 $(function() {
-  app.controllers.alerts = new app.controllers.Alerts();
-  app.controllers.main = new app.controllers.Main();
+  var main;
+  console.log("On Document Ready...", window);
+  main = new MainController();
+  window.app = main.app;
   return Backbone.history.start();
 });
 
@@ -16646,7 +16585,6 @@ module.exports = FrameView = (function(_super) {
     FrameView.__super__.render.apply(this, arguments);
     this.getTime();
     this.outputMessage();
-    this.model.set('read', +moment());
     return this;
   };
 
@@ -16675,37 +16613,45 @@ module.exports = FrameView = (function(_super) {
     }), [0]);
     breaks = breaks.slice(1);
     breaks = breaks.slice(0, -1);
-    text = message.join('').slice(0, this.tick).split('');
-    for (_i = 0, _len = breaks.length; _i < _len; _i++) {
-      b = breaks[_i];
-      if (text.length !== 1) {
-        text.splice(b, 0, "<br/><br/>");
-      }
-    }
-    text = text.join('');
-    this.$('.message').html(text);
-    this.tick++;
-    if (this.tick < total) {
-      return setTimeout(this.outputMessage, 1000 * 0.075);
-    } else {
+    if (this.model.get('seen')) {
+      this.$('.message').html(message.join('<br/><br/>'));
       return this.doneRendering();
+    } else {
+      text = message.join('').slice(0, this.tick).split('');
+      for (_i = 0, _len = breaks.length; _i < _len; _i++) {
+        b = breaks[_i];
+        if (text.length !== 1) {
+          text.splice(b, 0, "<br/><br/>");
+        }
+      }
+      text = text.join('');
+      this.$('.message').html(text);
+      this.tick++;
+      if (this.tick < total) {
+        return setTimeout(this.outputMessage, 1000 * 0.075);
+      } else {
+        return this.doneRendering();
+      }
     }
   };
 
   FrameView.prototype.doneRendering = function() {
-    this.model.save();
-    this.model.set('read', +moment());
+    if (!this.model.get('seen')) {
+      this.model.set('seen', +moment());
+      console.log("set seen: " + (moment()));
+      this.model.save();
+    }
     this.updateTime();
     return this.$('.read input').attr('checked', true);
   };
 
   FrameView.prototype.updateTime = function() {
-    var currentIndex, lastRead, leftPercent, nextOPC;
-    lastRead = this.model.get('read');
-    if (lastRead) {
+    var currentIndex, lastSeen, leftPercent, nextOPC;
+    lastSeen = this.model.get('seen');
+    if (lastSeen) {
       currentIndex = this.model.collection.indexOf(this.model);
       nextOPC = this.model.collection.at(currentIndex + 1);
-      leftPercent = this.user.getTurnDuration(nextOPC, moment(lastRead));
+      leftPercent = this.user.getTurnDuration(nextOPC, moment(lastSeen));
       if (leftPercent > 100) {
         leftPercent = 100;
       }
@@ -16715,6 +16661,9 @@ module.exports = FrameView = (function(_super) {
         this.$el.addClass('read');
         return this.$('.actions .button').click((function(_this) {
           return function() {
+            _this.model.set('read', +moment());
+            console.log("set read: " + (moment()));
+            _this.model.save();
             return _this.trigger('next', _this);
           };
         })(this));
@@ -16729,9 +16678,9 @@ module.exports = FrameView = (function(_super) {
 
   FrameView.prototype.timeOfDay = function() {
     var hours, now, read;
-    read = moment(this.model.get('read'));
+    read = moment(this.model.get('seen'));
     now = moment();
-    if (this.model.get('read')) {
+    if (this.model.get('seen')) {
       hours = read.hours();
     } else {
       hours = now.hours();

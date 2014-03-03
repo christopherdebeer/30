@@ -44,7 +44,6 @@ module.exports = class FrameView extends View
 		super
 		@getTime()
 		@outputMessage()
-		@model.set( 'read', +moment() )
 		this
 	
 	getTime: ->
@@ -69,39 +68,45 @@ module.exports = class FrameView extends View
 		breaks = breaks.slice( 1 )
 		#remove last
 		breaks = breaks.slice( 0, -1 )
-		# if @model.get( 'read' )
-		#	@$('.message').html( message.join('<br/><br/>') )
-		# else	
-		text = message.join('').slice( 0, @tick).split('')
-		for b in breaks
-			text.splice( b, 0, "<br/><br/>") unless text.length == 1
-		text = text.join('')
-		@$('.message').html( text )
-		@tick++
-		if @tick < total
-			setTimeout( @outputMessage, 1000 * 0.075 )
-		else
+		if @model.get( 'seen' )
+			@$('.message').html( message.join('<br/><br/>') )
 			@doneRendering()
+		else	
+			text = message.join('').slice( 0, @tick).split('')
+			for b in breaks
+				text.splice( b, 0, "<br/><br/>") unless text.length == 1
+			text = text.join('')
+			@$('.message').html( text )
+			@tick++
+			if @tick < total
+				setTimeout( @outputMessage, 1000 * 0.075 )
+			else
+				@doneRendering()
 
 	doneRendering: =>
-		@model.save()
-		@model.set( 'read', +moment() )
+		unless @model.get( 'seen' )
+			@model.set( 'seen', +moment() )
+			console.log "set seen: #{moment()}"
+			@model.save()
 		@updateTime()
 		@$('.read input').attr('checked', true)
 		
 
 	updateTime: =>
-		lastRead = @model.get( 'read' )
-		if lastRead
+		lastSeen = @model.get( 'seen' )
+		if lastSeen
 			currentIndex = @model.collection.indexOf( @model )
 			nextOPC = @model.collection.at( currentIndex + 1)
-			leftPercent = @user.getTurnDuration( nextOPC, moment( lastRead ) ) 
+			leftPercent = @user.getTurnDuration( nextOPC, moment( lastSeen ) ) 
 			leftPercent = 100 if leftPercent > 100
 			@$('.timer').css( 'width', "#{ leftPercent }%" )
 			if leftPercent >= 100
 				console.log "time elapsed"
 				@$el.addClass( 'read' )
 				@$( '.actions .button').click =>
+					@model.set( 'read', +moment() )
+					console.log "set read: #{moment()}"
+					@model.save()
 					@trigger( 'next', this )
 			else
 				console.log "time %:", leftPercent
@@ -110,9 +115,9 @@ module.exports = class FrameView extends View
 			setTimeout( @updateTime, 1000 * 1 )
 
 	timeOfDay: =>
-		read = moment( @model.get( 'read' ) )
+		read = moment( @model.get( 'seen' ) )
 		now = moment()
-		if @model.get( 'read' )
+		if @model.get( 'seen' )
 			hours = read.hours()
 		else 
 			hours = now.hours()

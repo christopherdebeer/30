@@ -9,13 +9,6 @@ Backbone.LocalStorage = require("backbone.localstorage");
 Backbone.$ = $
 
 
-window.app = app =
-	models: {}
-	views: {}
-	controllers: {}
-	collections: {}
-
-
 FrameView = require( './views/FrameView.coffee')
 SplashView = require( './views/SplashView.coffee')
 AlertView = require( './views/AlertView.coffee')
@@ -28,12 +21,10 @@ console.log "SEED_TIME is #{SEED_TIME}"
 
 
 DATA = [{
-		id: startId + 1
 		message: [ 
 			"Official Party Member Correspondence Device",
 			"OPMCD Uplinking...."]
 		},{
-		id: startId + 2
 		message: [ 
 			"TIME Comrade,", 
 			"The Party is delighted to inform you that tomorrow will be the 2014 Ministry of Plenty Annual Party Census."]
@@ -73,7 +64,7 @@ DATA = [{
 ]
 
 
-class app.models.User extends Backbone.Model
+class UserModel extends Backbone.Model
 	defaults:
 		firstName: ''
 		lastName: ''
@@ -87,13 +78,14 @@ class app.models.User extends Backbone.Model
 		today = moment()
 		limit = Math.min( turns, collection.length - 1 )
 		opc = collection.at( limit )
+		seen = opc.get( 'seen' )
 		read = opc.get( 'read' )
-		console.log "opc[#{ limit }] read: #{ !!read } turns: #{ turns }"
+		console.log "opc[#{ limit }] read: #{ !!read } seen: #{ !!seen } turns: #{ turns }"
 		console.log "now: ", today.toDate()
 		if read
-			whenRead = moment( read )
-			console.log "read: ", whenRead.toDate()
-			if @isNextTurn( collection.at(limit + 1) , whenRead )
+			whenSeen = moment( seen )
+			console.log "seen: ", whenSeen.toDate()
+			if @isNextTurn( collection.at(limit + 1) , whenSeen )
 				@set( 'turns', turns + 1 )
 				@save()
 				limit = Math.min( @get('turns'), collection.length - 1 )
@@ -112,98 +104,81 @@ class app.models.User extends Backbone.Model
 	isNextTurn: (opc, whenRead) =>
 		@getTurnDuration(opc, whenRead) >= 100
 
-class app.collections.OPCCollection extends Backbone.Collection
+class OPCCollection extends Backbone.Collection
 	localStorage: new Backbone.LocalStorage("opc-store")
 
-class app.models.OPC extends Backbone.Model
+class OPCModel extends Backbone.Model
 	defaults:
 		message: ['default message']
 		read: false
+		seen: false
 		priority: SEED_TIME / 24 / 12 / 60
-		className: 'default' 
+		type: 'general'
 	url: '/opc'
 	localStorage: new Backbone.LocalStorage("opc-store")
-	
 
-class app.models.GeneralOPC extends app.models.OPC
-	constructor: ->
-		super
-		@set( 'className', 'general' )
-
-class app.models.CivilOPC extends app.models.OPC
-	constructor: ->
-		super
-		@set( 'className', 'civil' )
-
-class app.models.InformationalOPC extends app.models.OPC
-	constructor: ->
-		super
-		@set( 'className', 'info' )
-
-class app.controllers.Main extends Backbone.Router
+class MainController extends Backbone.Router
 	routes:
 		'': 'init'
 
-	init: ->
-		app.$el = $('body')
+	init: =>
+		@app = $el: $('body')
 		console.log "Init..."
-		@findOrCreateUser (user) =>
+		@findOrCreateUser =>
 			console.log "All is good."
-			window.opcs = opcs = new app.collections.OPCCollection()
+			console.log
+			window.opcs = opcs = new OPCCollection()
 			p = opcs.fetch()
-			for item in DATA
-				opc = switch item.type
-					when 'info' then new app.models.InformationalOPC( item )
-					when 'civil' then new app.models.CivilOPC( item )
-					else new app.models.GeneralOPC( item )
-				opcs.add( opc ).save() unless opcs.contains( opc )
-
-			app.user = @user = user
-			splash = new SplashView( model: @user )
-			splash.render()
-			app.$el.append splash.el
-			menu = new MenuView( model: @user )
-			menu.render()
-			app.$el.append menu.el
+			
 			cont = =>
+				console.log opcs
+				for item, i in DATA
+					item.id = i
+					opc = new OPCModel( item )
+					unless opcs.contains( opc )
+						# console.log('adding/updating OPC:', opc)
+						opcs.add( opc ).save() 
+					else
+						console.log('not adding existing opc:', opc)
+				splash = new SplashView( model: @user )
+				splash.render()
+				@app.$el.append splash.el
+				menu = new MenuView( model: @user )
+				menu.render()
+				@app.$el.append menu.el
 				splash.on 'done', =>
 					@showFrame()
 			p.done( cont )
-			p.fail( cont )			
+			p.fail =>
+				console.log "OPCS fetch failed...."
+				cont()			
 			
 	showFrame: =>
 		opc = @user.getCurrentOPC( opcs )
-		console.log opc
+		console.log "Show frame...", opc.get('id')
 		frame = new FrameView( model: opc, user: @user )
 		frame.on( 'next', @newFrame )
 		frame.render()
-		app.$el.append frame.el
+		@app.$el.append frame.el
 
 	newFrame: (frame) =>
 		frame.remove()
 		@showFrame()
 
-	findOrCreateUser: (cb) ->
+	findOrCreateUser: (cb) =>
 		console.log "Find or create User..."
-		user = new app.models.User( id: 1 )
-		init = user.fetch()
-		init.done -> cb( user )
-		init.fail ->
+		@user = new UserModel( id: 1 )
+		init = @user.fetch()
+		init.done => cb()
+		init.fail =>
 			console.log "User not found. Creating..."
-			user.save()
-			cb( user )
+			@user.save()
+			cb()
 
-
-
-class app.controllers.Alerts
-	show: (objects) ->
-		msgs = ($(o).text() for o in objects)
-		model = new Backbone.Model( messages: msgs )
-		alert = new AlertView( model: model )
-		$('body').append( alert.render().$el ) 
 $ ->
-	app.controllers.alerts = new app.controllers.Alerts()
-	app.controllers.main = new app.controllers.Main()
+	console.log "On Document Ready...", window
+	main = new MainController()
+	window.app = main.app
 	Backbone.history.start()
 
 
