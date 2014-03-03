@@ -84,17 +84,27 @@
 			
 		}
 
-		.button {
-			font-size: 1.4em;
-			border: 3px solid black;
-			padding: 0.8em;
-			width: 12em;
-			text-align: center;
-			display: block;
-			margin:0 auto;
-			font-weight: bold;
-			font-family: sans-serif;
-			cursor: pointer;
+		.actions {
+			min-height: 6em;
+			padding: 1em 0;
+
+			.button {
+				font-size: 1.4em;
+				border: 3px solid black;
+				padding: 0.8em;
+				width: 12em;
+				text-align: center;
+				display: block;
+				margin:0 auto;
+				font-weight: bold;
+				font-family: sans-serif;
+				cursor: pointer;
+			}
+		}
+
+		.footnotes {
+			padding: 1em;
+			font-size: 1.2em;
 		}
 	}
 	.footer {
@@ -120,7 +130,11 @@
 	}
 
 	&:not(.read) {
-		.actions { display: none; }
+		.actions .button { display: none; }
+	}
+
+	&:not(.seen) {
+		.footnotes { display: none; }
 	}
 
 	&.general {

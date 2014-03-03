@@ -28,6 +28,13 @@ module.exports = class FrameView extends View
 		<div class="actions">
 			<div class="button">OK</div>
 		</div>
+		<% if (note) { %>
+			<div class="footnotes">
+				<div class="note"><%= note %></div>
+			</div>
+		<% } else { %>
+			<img src="" alt="">
+		<% } %>
 	</div>
 	<div class="footer">
 		<div class="menu-button"><i class="fa fa-bars"></i></div>
@@ -89,6 +96,8 @@ module.exports = class FrameView extends View
 			@model.set( 'seen', +moment() )
 			console.log "set seen: #{moment()}"
 			@model.save()
+		
+		@$el.addClass( 'seen' )
 		@$('.read input').attr('checked', true)
 		
 

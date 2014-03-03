@@ -20,11 +20,11 @@ SEED_TIME = 1 * 60 * 60 * 24
 console.log "SEED_TIME is #{SEED_TIME}"
 
 
-DATA = [{message: ["Official Party Member Correspondence Device","OPMCD Uplinking...."] },
+DATA = [{message: ["Official Party Member Communication Device","OPMCD Uplinking*...."], note: "* Welcome"},
 		{message: ["You have agreed to the Terms and Conditions."," Long live The Party."], type: 'info'},
 		{message: ["TIME Comrade,", "The Party is delighted to inform you that tomorrow will be the 2014 Ministry of Plenty Annual Party Census."]
 		type: 'civil'},
-		{message: ["Rations.","The ministry of Love this week has increased your rations to 29."], type: 'civil'},
+		{message: ["Update:","The ministry of Love this week has increased your Rations* to 29."], type: 'civil', note: '* View your rations in your inventory via the menu below.'},
 		{message: "Have you seen? Concern for eurasian civilians? Lack of support for our military? outright dissent? sarcastic laughter? Report though crime! Because its your patriotic duty."},
 		{message: "There is no Dissent in Oceania. Those who criticise Big Brother are merely confused.", type: 'info'},
 		{message: "Unless your life is tightly controlled you will never be free.", type: 'info'},
@@ -99,6 +99,7 @@ class OPCModel extends Backbone.Model
 		seen: false
 		priority: SEED_TIME / 24 / 12 / 60
 		type: 'general'
+		note: false
 	url: '/opc'
 	localStorage: new Backbone.LocalStorage("opc-store")
 

@@ -38,16 +38,18 @@ console.log("SEED_TIME is " + SEED_TIME);
 
 DATA = [
   {
-    message: ["Official Party Member Correspondence Device", "OPMCD Uplinking...."]
+    message: ["Official Party Member Communication Device", "OPMCD Uplinking*...."],
+    note: "* Welcome"
   }, {
-    message: "You have agreed to the Terms and Conditions. Long live The Party.",
+    message: ["You have agreed to the Terms and Conditions.", " Long live The Party."],
     type: 'info'
   }, {
     message: ["TIME Comrade,", "The Party is delighted to inform you that tomorrow will be the 2014 Ministry of Plenty Annual Party Census."],
     type: 'civil'
   }, {
-    message: "The ministry of Love this week has increased your sugar rations to 29.",
-    type: 'civil'
+    message: ["Update:", "The ministry of Love this week has increased your Rations* to 29."],
+    type: 'civil',
+    note: '* View your rations in your inventory via the menu below.'
   }, {
     message: "Have you seen? Concern for eurasian civilians? Lack of support for our military? outright dissent? sarcastic laughter? Report though crime! Because its your patriotic duty."
   }, {
@@ -188,7 +190,8 @@ OPCModel = (function(_super) {
     read: false,
     seen: false,
     priority: SEED_TIME / 24 / 12 / 60,
-    type: 'general'
+    type: 'general',
+    note: false
   };
 
   OPCModel.prototype.url = '/opc';
@@ -397,17 +400,23 @@ var css = '.frame {\
     .frame .body .message {\
       padding: 0.4em;\
       font-size: 2em; }\
-    .frame .body .button {\
-      font-size: 1.4em;\
-      border: 3px solid black;\
-      padding: 0.8em;\
-      width: 12em;\
-      text-align: center;\
-      display: block;\
-      margin: 0 auto;\
-      font-weight: bold;\
-      font-family: sans-serif;\
-      cursor: pointer; }\
+    .frame .body .actions {\
+      min-height: 6em;\
+      padding: 1em 0; }\
+      .frame .body .actions .button {\
+        font-size: 1.4em;\
+        border: 3px solid black;\
+        padding: 0.8em;\
+        width: 12em;\
+        text-align: center;\
+        display: block;\
+        margin: 0 auto;\
+        font-weight: bold;\
+        font-family: sans-serif;\
+        cursor: pointer; }\
+    .frame .body .footnotes {\
+      padding: 1em;\
+      font-size: 1.2em; }\
   .frame .footer {\
     margin-top: 2em;\
     position: absolute;\
@@ -425,7 +434,9 @@ var css = '.frame {\
       padding: 0.6em;\
       width: 1em;\
       cursor: pointer; }\
-  .frame:not(.read) .actions {\
+  .frame:not(.read) .actions .button {\
+    display: none; }\
+  .frame:not(.seen) .footnotes {\
     display: none; }\
   .frame.general {\
     background-color: #f0f2f3; }\
@@ -16567,7 +16578,7 @@ module.exports = FrameView = (function(_super) {
 
   FrameView.prototype.className = "frame";
 
-  FrameView.prototype.template = "<div class=\"header\">\n	<div class=\"inner\">\n		<div class=\"icons\">\n			<i class=\"fa fa-eye\"></i>\n			<i class=\"fa fa-bolt\"></i>\n			<i class=\"fa fa-triangle\">&#9650;</i>\n		</div>\n		<div><strong>OPC#</strong> <span class=\"opcId\"><%= 39277122883 + id  %></span></div>\n		<div class=\"hdiv\"></div>\n		<div class=\"second-row\"><strong>D</strong> <span class=\"time\"></span></div>\n	</div>\n	<div class=\"timer\"></div>\n</div>\n\n<div class=\"body\">\n	<img class=\"barcode\" src=\"assets/barcode.png\" />\n	<div class=\"message\"></div>\n	<div class=\"read\"><input disabled <%= read ? 'checked' : '' %> type=\"checkbox\"> Reciept noted</div>\n	<div class=\"actions\">\n		<div class=\"button\">OK</div>\n	</div>\n</div>\n<div class=\"footer\">\n	<div class=\"menu-button\"><i class=\"fa fa-bars\"></i></div>\n</div>";
+  FrameView.prototype.template = "<div class=\"header\">\n	<div class=\"inner\">\n		<div class=\"icons\">\n			<i class=\"fa fa-eye\"></i>\n			<i class=\"fa fa-bolt\"></i>\n			<i class=\"fa fa-triangle\">&#9650;</i>\n		</div>\n		<div><strong>OPC#</strong> <span class=\"opcId\"><%= 39277122883 + id  %></span></div>\n		<div class=\"hdiv\"></div>\n		<div class=\"second-row\"><strong>D</strong> <span class=\"time\"></span></div>\n	</div>\n	<div class=\"timer\"></div>\n</div>\n\n<div class=\"body\">\n	<img class=\"barcode\" src=\"assets/barcode.png\" />\n	<div class=\"message\"></div>\n	<div class=\"read\"><input disabled <%= read ? 'checked' : '' %> type=\"checkbox\"> Reciept noted</div>\n	<div class=\"actions\">\n		<div class=\"button\">OK</div>\n	</div>\n	<% if (note) { %>\n		<div class=\"footnotes\">\n			<div class=\"note\"><%= note %></div>\n		</div>\n	<% } else { %>\n		<img src=\"\" alt=\"\">\n	<% } %>\n</div>\n<div class=\"footer\">\n	<div class=\"menu-button\"><i class=\"fa fa-bars\"></i></div>\n</div>";
 
   FrameView.prototype.initialize = function(_arg) {
     this.user = _arg.user;
@@ -16626,7 +16637,7 @@ module.exports = FrameView = (function(_super) {
       text = text.join('');
       this.$('.message').html(text);
       this.tick++;
-      if (this.tick < total) {
+      if (this.tick <= total) {
         return setTimeout(this.outputMessage, 1000 * 0.075);
       } else {
         return this.doneRendering();
@@ -16640,6 +16651,7 @@ module.exports = FrameView = (function(_super) {
       console.log("set seen: " + (moment()));
       this.model.save();
     }
+    this.$el.addClass('seen');
     return this.$('.read input').attr('checked', true);
   };
 
