@@ -15,22 +15,15 @@ AlertView = require( './views/AlertView.coffee')
 MenuView = require( './views/MenuView.coffee')
 View = require( './views/BaseView.coffee')
 
-startId = 3354234567
+START = 3354234567
 SEED_TIME = 1 * 60 * 60 * 24
 console.log "SEED_TIME is #{SEED_TIME}"
 
 
-DATA = [{
-		message: [ 
-			"Official Party Member Correspondence Device",
-			"OPMCD Uplinking...."]
-		},{
-		message: [ 
-			"TIME Comrade,", 
-			"The Party is delighted to inform you that tomorrow will be the 2014 Ministry of Plenty Annual Party Census."]
-		type: 'civil'
-		},
-		{message: "You have agreed to the Terms and Conditions. Hurray for The Party.", type: 'info'},
+DATA = [{message: [ "Official Party Member Correspondence Device","OPMCD Uplinking...."] },
+		{message: "You have agreed to the Terms and Conditions. Long live The Party.", type: 'info'},
+		{message: [ "TIME Comrade,", "The Party is delighted to inform you that tomorrow will be the 2014 Ministry of Plenty Annual Party Census."]
+		type: 'civil'},
 		{message: "The ministry of Love this week has increased your sugar rations to 29.", type: 'civil'},
 		{message: "Have you seen? Concern for eurasian civilians? Lack of support for our military? outright dissent? sarcastic laughter? Report though crime! Because its your patriotic duty."},
 		{message: "There is no Dissent in Oceania. Those who criticise Big Brother are merely confused.", type: 'info'},
@@ -51,16 +44,8 @@ DATA = [{
 		{message: "INTERNATIONAL THREAT: The Eurasian faction formerly known as Iran has developed nuclear capabilities that threaten your very livelihood. They have gone to far! "},
 		{message: "#—— 00000 00000 00000 000 0000 00000 0000 WILL YOU HELP?	"},
 		{message: "The Ministry of Love, this week have increased your sugar rations to 15."},
-		{
-		message: [ 
-			"TIME Comrade,", 
-			"The Party knows all, find consolation in that."]
-		}
-		type: 'info',{
-		message: [ 
-			"TIME Comrade,", 
-			"Patience..."
-		]}
+		{message: [ "TIME Comrade,", "The Party knows all, find consolation in that."], type: 'info' },
+		{message: [ "TIME Comrade,", "Patience..." ]}
 ]
 
 
@@ -176,9 +161,8 @@ class MainController extends Backbone.Router
 			cb()
 
 $ ->
-	console.log "On Document Ready...", window
+	console.log "On Document Ready..."
 	main = new MainController()
-	window.app = main.app
 	Backbone.history.start()
 
 

@@ -1,5 +1,5 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var $, AlertView, Backbone, DATA, FrameView, MainController, MenuView, OPCCollection, OPCModel, SEED_TIME, SplashView, UserModel, View, jQuery, moment, startId, _,
+var $, AlertView, Backbone, DATA, FrameView, MainController, MenuView, OPCCollection, OPCModel, SEED_TIME, START, SplashView, UserModel, View, jQuery, moment, _,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -30,7 +30,7 @@ MenuView = require('./views/MenuView.coffee');
 
 View = require('./views/BaseView.coffee');
 
-startId = 3354234567;
+START = 3354234567;
 
 SEED_TIME = 1 * 60 * 60 * 24;
 
@@ -40,11 +40,11 @@ DATA = [
   {
     message: ["Official Party Member Correspondence Device", "OPMCD Uplinking...."]
   }, {
+    message: "You have agreed to the Terms and Conditions. Long live The Party.",
+    type: 'info'
+  }, {
     message: ["TIME Comrade,", "The Party is delighted to inform you that tomorrow will be the 2014 Ministry of Plenty Annual Party Census."],
     type: 'civil'
-  }, {
-    message: "You have agreed to the Terms and Conditions. Hurray for The Party.",
-    type: 'info'
   }, {
     message: "The ministry of Love this week has increased your sugar rations to 29.",
     type: 'civil'
@@ -94,8 +94,7 @@ DATA = [
   }, {
     message: "The Ministry of Love, this week have increased your sugar rations to 15."
   }, {
-    message: ["TIME Comrade,", "The Party knows all, find consolation in that."]
-  }, {
+    message: ["TIME Comrade,", "The Party knows all, find consolation in that."],
     type: 'info'
   }, {
     message: ["TIME Comrade,", "Patience..."]
@@ -308,9 +307,8 @@ MainController = (function(_super) {
 
 $(function() {
   var main;
-  console.log("On Document Ready...", window);
+  console.log("On Document Ready...");
   main = new MainController();
-  window.app = main.app;
   return Backbone.history.start();
 });
 
@@ -353,7 +351,7 @@ var css = '.frame {\
       vertical-align: baseline; }\
     .frame .header .opcId {\
       color: red;\
-      width: 5em; }\
+      width: 8em; }\
     .frame .header .hdiv {\
       border-bottom: 2px solid black;\
       margin: 0.2em -0.4em; }\
@@ -16569,7 +16567,7 @@ module.exports = FrameView = (function(_super) {
 
   FrameView.prototype.className = "frame";
 
-  FrameView.prototype.template = "<div class=\"header\">\n	<div class=\"inner\">\n		<div class=\"icons\">\n			<i class=\"fa fa-eye\"></i>\n			<i class=\"fa fa-bolt\"></i>\n			<i class=\"fa fa-triangle\">&#9650;</i>\n		</div>\n		<div><strong>OPC#</strong> <span class=\"opcId\"><%= id %></span></div>\n		<div class=\"hdiv\"></div>\n		<div class=\"second-row\"><strong>D</strong> <span class=\"time\"></span></div>\n	</div>\n	<div class=\"timer\"></div>\n</div>\n\n<div class=\"body\">\n	<img class=\"barcode\" src=\"assets/barcode.png\" />\n	<div class=\"message\"></div>\n	<div class=\"read\"><input disabled <%= read ? 'checked' : '' %> type=\"checkbox\"> Reciept noted</div>\n	<div class=\"actions\">\n		<div class=\"button\">OK</div>\n	</div>\n</div>\n<div class=\"footer\">\n	<div class=\"menu-button\"><i class=\"fa fa-bars\"></i></div>\n</div>";
+  FrameView.prototype.template = "<div class=\"header\">\n	<div class=\"inner\">\n		<div class=\"icons\">\n			<i class=\"fa fa-eye\"></i>\n			<i class=\"fa fa-bolt\"></i>\n			<i class=\"fa fa-triangle\">&#9650;</i>\n		</div>\n		<div><strong>OPC#</strong> <span class=\"opcId\"><%= 39277122883 + id  %></span></div>\n		<div class=\"hdiv\"></div>\n		<div class=\"second-row\"><strong>D</strong> <span class=\"time\"></span></div>\n	</div>\n	<div class=\"timer\"></div>\n</div>\n\n<div class=\"body\">\n	<img class=\"barcode\" src=\"assets/barcode.png\" />\n	<div class=\"message\"></div>\n	<div class=\"read\"><input disabled <%= read ? 'checked' : '' %> type=\"checkbox\"> Reciept noted</div>\n	<div class=\"actions\">\n		<div class=\"button\">OK</div>\n	</div>\n</div>\n<div class=\"footer\">\n	<div class=\"menu-button\"><i class=\"fa fa-bars\"></i></div>\n</div>";
 
   FrameView.prototype.initialize = function(_arg) {
     this.user = _arg.user;
@@ -16583,8 +16581,10 @@ module.exports = FrameView = (function(_super) {
 
   FrameView.prototype.render = function() {
     FrameView.__super__.render.apply(this, arguments);
+    this.$el.addClass(this.model.get('type'));
     this.getTime();
     this.outputMessage();
+    this.updateTime();
     return this;
   };
 
@@ -16599,7 +16599,6 @@ module.exports = FrameView = (function(_super) {
 
   FrameView.prototype.outputMessage = function() {
     var b, breaks, message, text, total, _i, _len;
-    this.$el.addClass(this.model.get('className'));
     message = typeof this.model.get('message') === 'string' ? [this.model.get('message').replace('TIME', this.timeOfDay())] : this.model.get('message').map((function(_this) {
       return function(m) {
         return m.replace('TIME', _this.timeOfDay());
@@ -16641,37 +16640,34 @@ module.exports = FrameView = (function(_super) {
       console.log("set seen: " + (moment()));
       this.model.save();
     }
-    this.updateTime();
     return this.$('.read input').attr('checked', true);
   };
 
   FrameView.prototype.updateTime = function() {
-    var currentIndex, lastSeen, leftPercent, nextOPC;
+    var currentIndex, lastSeen, leftPercent, nextOPC, percent;
     lastSeen = this.model.get('seen');
+    currentIndex = this.model.collection.indexOf(this.model);
+    nextOPC = this.model.collection.at(currentIndex + 1);
     if (lastSeen) {
-      currentIndex = this.model.collection.indexOf(this.model);
-      nextOPC = this.model.collection.at(currentIndex + 1);
       leftPercent = this.user.getTurnDuration(nextOPC, moment(lastSeen));
-      if (leftPercent > 100) {
-        leftPercent = 100;
-      }
-      this.$('.timer').css('width', "" + leftPercent + "%");
-      if (leftPercent >= 100) {
-        console.log("time elapsed");
-        this.$el.addClass('read');
-        return this.$('.actions .button').click((function(_this) {
-          return function() {
-            _this.model.set('read', +moment());
-            console.log("set read: " + (moment()));
-            _this.model.save();
-            return _this.trigger('next', _this);
-          };
-        })(this));
-      } else {
-        console.log("time %:", leftPercent);
-        return setTimeout(this.updateTime, 1000 * 1);
-      }
     } else {
+      leftPercent = 5;
+    }
+    percent = leftPercent > 100 ? 100 : leftPercent;
+    this.$('.timer').css('width', "" + percent + "%");
+    if (leftPercent >= 100) {
+      console.log("Time elapsed", percent, leftPercent);
+      this.$el.addClass('read');
+      return this.$('.actions .button').click((function(_this) {
+        return function() {
+          _this.model.set('read', +moment());
+          console.log("set read: " + (moment()));
+          _this.model.save();
+          return _this.trigger('next', _this);
+        };
+      })(this));
+    } else {
+      console.log("time %:", percent);
       return setTimeout(this.updateTime, 1000 * 1);
     }
   };

@@ -45,6 +45,7 @@ module.exports = class FrameView extends View
 		@$el.addClass( @model.get( 'type') )
 		@getTime()
 		@outputMessage()
+		@updateTime()
 		this
 	
 	getTime: ->
@@ -54,7 +55,6 @@ module.exports = class FrameView extends View
 
 	tick: 1
 	outputMessage: =>
-		@$el.addClass( @model.get('className') )
 		message = if typeof @model.get('message') == 'string'
 			[@model.get('message').replace( 'TIME', @timeOfDay() ) ]
 		else
@@ -89,31 +89,31 @@ module.exports = class FrameView extends View
 			@model.set( 'seen', +moment() )
 			console.log "set seen: #{moment()}"
 			@model.save()
-		@updateTime()
 		@$('.read input').attr('checked', true)
 		
 
 	updateTime: =>
 		lastSeen = @model.get( 'seen' )
+		currentIndex = @model.collection.indexOf( @model )
+		nextOPC = @model.collection.at( currentIndex + 1)
 		if lastSeen
-			currentIndex = @model.collection.indexOf( @model )
-			nextOPC = @model.collection.at( currentIndex + 1)
 			leftPercent = @user.getTurnDuration( nextOPC, moment( lastSeen ) ) 
-			leftPercent = 100 if leftPercent > 100
-			@$('.timer').css( 'width', "#{ leftPercent }%" )
-			if leftPercent >= 100
-				console.log "time elapsed"
-				@$el.addClass( 'read' )
-				@$( '.actions .button').click =>
-					@model.set( 'read', +moment() )
-					console.log "set read: #{moment()}"
-					@model.save()
-					@trigger( 'next', this )
-			else
-				console.log "time %:", leftPercent
-				setTimeout( @updateTime, 1000 * 1 )
 		else
+			leftPercent = 5
+		percent = if leftPercent > 100 then 100 else leftPercent
+		@$('.timer').css( 'width', "#{ percent }%" )
+		if leftPercent >= 100
+			console.log "Time elapsed", percent, leftPercent
+			@$el.addClass( 'read' )
+			@$( '.actions .button').click =>
+				@model.set( 'read', +moment() )
+				console.log "set read: #{moment()}"
+				@model.save()
+				@trigger( 'next', this )
+		else
+			console.log "time %:", percent
 			setTimeout( @updateTime, 1000 * 1 )
+
 
 	timeOfDay: =>
 		read = moment( @model.get( 'seen' ) )
