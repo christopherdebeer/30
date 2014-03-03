@@ -14,7 +14,7 @@ module.exports = class FrameView extends View
 				<i class="fa fa-bolt"></i>
 				<i class="fa fa-triangle">&#9650;</i>
 			</div>
-			<div><strong>OPC#</strong> <span class="opcId"><%= id %></span></div>
+			<div><strong>OPC#</strong> <span class="opcId"><%= 39277122883 + id  %></span></div>
 			<div class="hdiv"></div>
 			<div class="second-row"><strong>D</strong> <span class="time"></span></div>
 		</div>
@@ -42,6 +42,7 @@ module.exports = class FrameView extends View
 	
 	render: =>
 		super
+		@$el.addClass( @model.get( 'type') )
 		@getTime()
 		@outputMessage()
 		this
