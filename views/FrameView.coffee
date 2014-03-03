@@ -79,7 +79,7 @@ module.exports = class FrameView extends View
 			text = text.join('')
 			@$('.message').html( text )
 			@tick++
-			if @tick < total
+			if @tick <= total
 				setTimeout( @outputMessage, 1000 * 0.075 )
 			else
 				@doneRendering()
