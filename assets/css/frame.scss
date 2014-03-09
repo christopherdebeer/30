@@ -49,9 +49,7 @@
 		.timer {
 			height: 5px;
 			background-color: black;
-			width: 0%;
-			-webkit-transition:width 1s;
-			transition:width 1s;
+			width: 100%;
 		}
 		.second-row { padding-top: 0.2em; }
 	}
@@ -101,16 +99,14 @@
 				font-family: sans-serif;
 				cursor: pointer;
 
-				.timer {
+				&.active .timer {
 					position: absolute;
 					top: 0;
 					bottom: 0;
 					left: 0;
 					background-color: black;
 					opacity: 0.5;
-					width: 50%;
-					-webkit-transition:width 1s;
-					transition:width 1s;
+					width: 0%;
 				}
 			}
 			.button:not(:first-child) {

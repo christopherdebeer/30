@@ -127,8 +127,8 @@ class UserModel extends Backbone.Model
 
 	getTurnDuration: (nextOPC, whenReadLastOPC) =>
 		now = moment()
-		fraction = now.diff( whenReadLastOPC, 'seconds' ) / SEED_TIME
-		priority = nextOPC.get( 'priority' ) / SEED_TIME
+		fraction = now.diff( whenReadLastOPC, 'miliseconds' ) / SEED_TIME
+		priority = nextOPC.get( 'priority' ) / SEED_TIME * 1000
 		percent = fraction * 100 / priority / ( 2 )
 		# console.log "Percent of turn #{percent}% so far."
 		percent

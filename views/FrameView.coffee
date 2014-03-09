@@ -63,7 +63,7 @@ module.exports = class FrameView extends View
 	getTime: ->
 		 time = new Date().toString().split('GMT')[0]
 		 @$( '.time' ).html( time )
-		 setTimeout( @getTime, 1000 * 1 )
+		 setTimeout( @getTime, 100 * 1 )
 
 	handleClickAction: =>
 		@model.set( 'seenTime', +moment() ) unless @model.get('seenTime')
@@ -118,25 +118,26 @@ module.exports = class FrameView extends View
 		else
 			leftPercent = 0
 		percent = if leftPercent > 100 then 100 else leftPercent
-		@$('.timer').css( 'width', "#{ 100 - percent }%" )
+		@$('.actions .timer').css( 'width', "#{ 100 - percent }%" )
 		@$el.addClass( 'read' )
 
 		if @model.get('read')
-			console.log "Time elapsed #{ percent }% "
+			# console.log "Time elapsed #{ percent }% "
 			if percent >= 100
 				@trigger( 'next', this )
 			else
-				setTimeout( @updateTime, 1000 * 1 )
+				setTimeout( @updateTime, 10 * 1 )
 		else
 			@attachActionHandlers()
-			setTimeout( @updateTime, 1000 * 1 )
+			setTimeout( @updateTime, 10 * 1 )
 
 	attachActionHandlers: =>
 		unless @attached
 			@attached = true
 			console.log( 'Attaching action handlers' )
-			@$( '.actions .button').click =>
+			@$( '.actions .button').click (ev) =>
 				@$el.addClass('waiting')
+				@$(ev.target).addClass('active')
 				console.log( 'click action handler' )
 				unless @model.get('read')
 					@model.set( 'read', +moment() )
