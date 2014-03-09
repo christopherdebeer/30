@@ -20,23 +20,70 @@ SEED_TIME = 1 * 60 * 60 * 24
 console.log "SEED_TIME is #{SEED_TIME}"
 
 
-DATA = [{message: ["Official Party Member Communication Device","OPMCD Uplinking*...."], note: "* Welcome"},
-		{message: ["You have agreed to the Terms and Conditions."," Long live The Party."], type: 'info'},
-		{message: ["TIME Comrade,", "The Party is delighted to inform you that tomorrow will be the 2014 Ministry of Plenty Annual Party Census."]
-		type: 'civil'},
-		{message: ["Update:","The ministry of Love this week has increased your Rations* to 29."], type: 'civil', note: '* View your rations in your inventory via the menu below.'},
-		{message: "Have you seen? Concern for eurasian civilians? Lack of support for our military? outright dissent? sarcastic laughter? Report though crime! Because its your patriotic duty."},
-		{message: "There is no Dissent in Oceania. Those who criticise Big Brother are merely confused.", type: 'info'},
-		{message: "Unless your life is tightly controlled you will never be free.", type: 'info'},
-		{message: "INGSOC: Love it or commit a thoughtcrime."},
-		{message: "2 Aeroplanes hit 2 Towers. 3 Buildings are demolished. because 2+2=5"},
-		{message: "What was your sugar intake in the last week? ________"},
-		{message: "Did you exceed that amount this week? Yes? No? ", type: 'civil'},
-		{message: "Production is up 600% this year. Everything is only getting better.", type: 'info'},
-		{message: "Your sugar rations have been increased to 24! Ministrty of Love.", type: 'civil'},
-		{message: "The Anti Sex League wants you! Sign up:  _____ Show your support and appreciation."},
-		{message: "Census: Enter details.", type: 'civil'},
-		{message: "Have you seen this party member?", type: 'info'},
+DATA = [{
+			message: ["Official Party Member Communication Device","OPMCD Uplinking...."]
+			note: "* Patience is a virtue"
+		},
+		{
+			message: ["You have agreed to the Terms and Conditions."," Long live The Party."]
+			type: 'info'
+		},
+		{
+			message: ["TIME Comrade,", "The Party is delighted to inform you that tomorrow will be the 2014 Ministry of Plenty Annual Party Census."]
+			type: 'civil'
+			priority: SEED_TIME / 24 / 12 / 60 / 3
+		},
+		{
+			message: ["Update:","The ministry of Love this week has increased your Rations to 29."]
+			type: 'civil' 
+			actions: ['Queue For Rations']
+		},
+		{
+			message: "Have you seen?" 
+			actions: ['Concern for eurasian civilians?','Lack of support for our military?','Outright dissent?', 'Sarcastic laughter?']
+			message2: "Report though crime! It's your duty."
+			showRead: false
+		},
+		{
+			message: "There is no Dissent in Oceania. Those who criticise Big Brother are merely confused."
+			type: 'info'
+		},
+		{
+			message: "Unless your life is tightly controlled you will never be free."
+			type: 'info'
+		},
+		{
+			message: "INGSOC: Love it or commit a thoughtcrime."
+		},
+		{
+			message: "2 Aeroplanes hit 2 Towers. 3 Buildings are demolished. because 2+2=5"
+		},
+		{
+			message: "What was your sugar intake in the last week? ________"
+		},
+		{
+			message: "Did you exceed that amount this week? Yes? No? "
+			type: 'civil'
+		},
+		{
+			message: "Production is up 600% this year. Everything is only getting better."
+			type: 'info'
+		},
+		{
+			message: "Your sugar rations have been increased to 24! Ministrty of Love."
+			type: 'civil'
+		},
+		{
+			message: "The Anti Sex League wants you! Sign up:  _____ Show your support and appreciation."
+		},
+		{
+			message: "Census: Enter details."
+			type: 'civil'
+		},
+		{
+			message: "Have you seen this party member?"
+			type: 'info'
+		},
 		{message: "We all have a duty to look after our planet! Reduce your carbon footprint."},
 		{message: "#—— THIS IS THE 000000000. WE NEED TO FIND 00000000 0000000 CAN YOU HELP?"},
 		{message: "Have you seen? Concern for eurasian civilians? Lack of support for our military? outright dissent? sarcastic laughter? Report though crime! Because its your patriotic duty."},
@@ -96,10 +143,15 @@ class OPCModel extends Backbone.Model
 	defaults:
 		message: ['default message']
 		read: false
+		readTime: undefined
 		seen: false
+		seenTime: undefined
 		priority: SEED_TIME / 24 / 12 / 60
 		type: 'general'
 		note: false
+		actions: ['OK']
+		message2: false
+		showRead: true
 	url: '/opc'
 	localStorage: new Backbone.LocalStorage("opc-store")
 

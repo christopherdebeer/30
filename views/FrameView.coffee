@@ -24,16 +24,21 @@ module.exports = class FrameView extends View
 	<div class="body">
 		<img class="barcode" src="assets/barcode.png" />
 		<div class="message"></div>
-		<div class="read"><input disabled <%= read ? 'checked' : '' %> type="checkbox"> Reciept noted</div>
+		<% if (showRead) { %>
+			<div class="read"><input disabled <%= read ? 'checked' : '' %> type="checkbox"> Reciept noted</div>
+		<% } %>
 		<div class="actions">
-			<div class="button">OK</div>
+			<% for (var a=0; a<actions.length; a++) { %>
+				<div class="button"><%= actions[a] %><div class="timer"></div></div>
+			<% } %>
 		</div>
+		<% if (message2) { %>
+			<div class="message2"><%= message2 %></div>
+		<% } %>
 		<% if (note) { %>
 			<div class="footnotes">
 				<div class="note"><%= note %></div>
 			</div>
-		<% } else { %>
-			<img src="" alt="">
 		<% } %>
 	</div>
 	<div class="footer">
@@ -60,6 +65,9 @@ module.exports = class FrameView extends View
 		 @$( '.time' ).html( time )
 		 setTimeout( @getTime, 1000 * 1 )
 
+	handleClickAction: =>
+		@model.set( 'seenTime', +moment() ) unless @model.get('seenTime')
+		@model.save() 
 	tick: 1
 	outputMessage: =>
 		message = if typeof @model.get('message') == 'string'
@@ -105,24 +113,38 @@ module.exports = class FrameView extends View
 		lastSeen = @model.get( 'seen' )
 		currentIndex = @model.collection.indexOf( @model )
 		nextOPC = @model.collection.at( currentIndex + 1)
-		if lastSeen
-			leftPercent = @user.getTurnDuration( nextOPC, moment( lastSeen ) ) 
+		if lastSeen and @model.get('read')
+			leftPercent = @user.getTurnDuration( nextOPC, moment( @model.get('readTime') ) ) 
 		else
-			leftPercent = 5
+			leftPercent = 0
 		percent = if leftPercent > 100 then 100 else leftPercent
-		@$('.timer').css( 'width', "#{ percent }%" )
-		if leftPercent >= 100
-			console.log "Time elapsed", percent, leftPercent
-			@$el.addClass( 'read' )
-			@$( '.actions .button').click =>
-				@model.set( 'read', +moment() )
-				console.log "set read: #{moment()}"
-				@model.save()
+		@$('.timer').css( 'width', "#{ 100 - percent }%" )
+		@$el.addClass( 'read' )
+
+		if @model.get('read')
+			console.log "Time elapsed #{ percent }% "
+			if percent >= 100
 				@trigger( 'next', this )
+			else
+				setTimeout( @updateTime, 1000 * 1 )
 		else
-			console.log "time %:", percent
+			@attachActionHandlers()
 			setTimeout( @updateTime, 1000 * 1 )
 
+	attachActionHandlers: =>
+		unless @attached
+			@attached = true
+			console.log( 'Attaching action handlers' )
+			@$( '.actions .button').click =>
+				@$el.addClass('waiting')
+				console.log( 'click action handler' )
+				unless @model.get('read')
+					@model.set( 'read', +moment() )
+					@model.set( 'readTime', +moment() )
+					console.log "set read: #{moment()}"
+					@model.save()
+				else
+					console.log( 'already read...' )
 
 	timeOfDay: =>
 		read = moment( @model.get( 'seen' ) )

@@ -78,7 +78,7 @@
 			padding: 0 0 1em;
 			width: 100%;
 		}
-		.message {
+		.message, .message2 {
 			padding: 0.4em;
 			font-size: 2em;
 			
@@ -91,14 +91,30 @@
 			.button {
 				font-size: 1.4em;
 				border: 3px solid black;
-				padding: 0.8em;
-				width: 12em;
+				padding: 0.9em;
+				width: 16em;
 				text-align: center;
 				display: block;
 				margin:0 auto;
 				font-weight: bold;
+				position: relative;
 				font-family: sans-serif;
 				cursor: pointer;
+
+				.timer {
+					position: absolute;
+					top: 0;
+					bottom: 0;
+					left: 0;
+					background-color: black;
+					opacity: 0.5;
+					width: 50%;
+					-webkit-transition:width 1s;
+					transition:width 1s;
+				}
+			}
+			.button:not(:first-child) {
+				border-top: 0 none;
 			}
 		}
 
@@ -129,8 +145,16 @@
 		}
 	}
 
-	&:not(.read) {
-		.actions .button { display: none; }
+	&:not(.seen), &.waiting {
+		.actions .button {
+			opacity: 0.5;
+			cursor-events: none;
+			cursor: default;
+		}
+	}
+
+	&:not(.waiting) {
+		.actions .button .timer { display: none; }
 	}
 
 	&:not(.seen) {
