@@ -137,10 +137,11 @@ module.exports = class FrameView extends View
 			@attached = true
 			console.log( 'Attaching action handlers' )
 			@$( '.actions .button').click (ev) =>
+				$button = @$(ev.target)
 				@$el.addClass('waiting')
-				@$(ev.target).addClass('active')
+				$button.addClass('active')
 				console.log( 'click action handler' )
-				@model.actionHandler( @user )
+				@model.actionHandler( @user, $button.text() )
 				unless @model.get('read')
 					@model.set( 'read', +moment() )
 					@model.set( 'readTime', +moment() )

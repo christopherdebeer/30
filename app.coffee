@@ -16,7 +16,7 @@ MenuView = require( './views/MenuView.coffee')
 View = require( './views/BaseView.coffee')
 
 START = 3354234567
-SEED_TIME = 1 * 60 * 60 * 24 / 100
+SEED_TIME = 1 * 60 * 60 * 24
 console.log "SEED_TIME is #{SEED_TIME}"
 
 
@@ -48,6 +48,10 @@ DATA = [{
 			message: ["Coworker Charlie S. will give you 1 pack of Victory Cigarretes in exchange for 1 Ration"]
 			type: 'message' 
 			actions: ['Accept', 'Decline']
+			actionHandler: (user, action) ->
+				if action is 'Accept'
+					user.updateInventory( 'Rations', user.get('inventory')['Rations'] - 1 )
+					user.updateInventory( 'Pack V. Cigarretes', 1)
 		},
 		{
 			message: "Have you seen?" 
