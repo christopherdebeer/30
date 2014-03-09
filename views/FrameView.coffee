@@ -47,6 +47,7 @@ module.exports = class FrameView extends View
 	"""
 	initialize: ({@user}) ->
 		console.log "frame init with user: ", @user
+		#console.log "and model: ", @model
 
 	events:
 		'click .footer .menu-button': 'toggleSlide'
@@ -60,7 +61,7 @@ module.exports = class FrameView extends View
 		@updateTime()
 		this
 	
-	getTime: ->
+	getTime: =>
 		 time = new Date().toString().split('GMT')[0]
 		 @$( '.time' ).html( time )
 		 setTimeout( @getTime, 100 * 1 )
@@ -139,6 +140,7 @@ module.exports = class FrameView extends View
 				@$el.addClass('waiting')
 				@$(ev.target).addClass('active')
 				console.log( 'click action handler' )
+				@model.actionHandler( @user )
 				unless @model.get('read')
 					@model.set( 'read', +moment() )
 					@model.set( 'readTime', +moment() )

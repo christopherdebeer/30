@@ -16,13 +16,14 @@ MenuView = require( './views/MenuView.coffee')
 View = require( './views/BaseView.coffee')
 
 START = 3354234567
-SEED_TIME = 1 * 60 * 60 * 24
+SEED_TIME = 1 * 60 * 60 * 24 / 100
 console.log "SEED_TIME is #{SEED_TIME}"
 
 
 DATA = [{
 			message: ["Official Party Member Communication Device","OPMCD Uplinking...."]
 			note: "* Patience is a virtue"
+			actionHandler: (user) -> user.updateInventory( 'Party Card', 1)
 		},
 		{
 			message: ["You have agreed to the Terms and Conditions."," Long live The Party."]
@@ -34,14 +35,24 @@ DATA = [{
 			priority: SEED_TIME / 24 / 12 / 60 / 3
 		},
 		{
-			message: ["Update:","The ministry of Love this week has increased your Rations to 29."]
+			message: ["Update:","The ministry of Love this week has increased your Rations allowance to 29."]
 			type: 'civil' 
 			actions: ['Queue For Rations']
 		},
 		{
+			message: ["You have recieved 5 Rations."]
+			type: 'civil'
+			actionHandler: (user) -> user.updateInventory( 'Rations', 5)
+		},
+		{
+			message: ["Coworker Charlie S. will give you 1 pack of Victory Cigarretes in exchange for 1 Ration"]
+			type: 'message' 
+			actions: ['Accept', 'Decline']
+		},
+		{
 			message: "Have you seen?" 
 			actions: ['Concern for eurasian civilians?','Lack of support for our military?','Outright dissent?', 'Sarcastic laughter?']
-			message2: "Report though crime! It's your duty."
+			message2: "Report thought crime! It's your duty."
 			showRead: false
 		},
 		{
@@ -102,6 +113,7 @@ class UserModel extends Backbone.Model
 		lastName: ''
 		start: +moment().startOf( 'day' )
 		turns: 0
+		inventory: {}
 	url: '/user'
 	localStorage: new Backbone.LocalStorage("user-store")
 
@@ -136,8 +148,11 @@ class UserModel extends Backbone.Model
 	isNextTurn: (opc, whenRead) =>
 		@getTurnDuration(opc, whenRead) >= 100
 
-class OPCCollection extends Backbone.Collection
-	localStorage: new Backbone.LocalStorage("opc-store")
+	updateInventory: (key, value) ->
+		inventory = @get('inventory')
+		inventory[key] = value
+		@set('inventory', inventory)
+		@save()
 
 class OPCModel extends Backbone.Model
 	defaults:
@@ -154,6 +169,13 @@ class OPCModel extends Backbone.Model
 		showRead: true
 	url: '/opc'
 	localStorage: new Backbone.LocalStorage("opc-store")
+	initialize: ({actionHandler}) ->
+		@actionHandler = actionHandler if actionHandler
+	actionHandler: (user) -> console.log( 'Action handler fired', user )
+
+class OPCCollection extends Backbone.Collection
+	localStorage: new Backbone.LocalStorage("opc-store")
+	model: OPCModel
 
 class MainController extends Backbone.Router
 	routes:
