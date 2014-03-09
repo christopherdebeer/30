@@ -45,17 +45,17 @@ DATA = [{
 			actionHandler: (user) -> user.updateInventory( 'Rations', 5)
 		},
 		{
-			message: ["Coworker Charlie S. will give you 1 pack of Victory Cigarretes in exchange for 1 Ration"]
+			message: ["Coworker Charlie S. will give you 1 pack of Victory Cigarettes in exchange for 1 Ration"]
 			type: 'message' 
 			actions: ['Accept', 'Decline']
 			actionHandler: (user, action) ->
 				if action is 'Accept'
 					user.updateInventory( 'Rations', user.get('inventory')['Rations'] - 1 )
-					user.updateInventory( 'Pack V. Cigarretes', 1)
+					user.updateInventory( 'Pack V. Cigarettes', 1)
 		},
 		{
 			message: "Have you seen?" 
-			actions: ['Concern for eurasian civilians?','Lack of support for our military?','Outright dissent?', 'Sarcastic laughter?']
+			actions: ['Concern for Eurasian civilians','Lack of support for our military','Outright dissent', 'Sarcastic laughter', 'None']
 			message2: "Report thought crime! It's your duty."
 			showRead: false
 		},
