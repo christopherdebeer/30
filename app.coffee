@@ -10,6 +10,7 @@ Backbone.$ = $
 
 
 FrameView = require( './views/FrameView.coffee')
+MessageView = require( './views/MessageView.coffee')
 SplashView = require( './views/SplashView.coffee')
 AlertView = require( './views/AlertView.coffee')
 MenuView = require( './views/MenuView.coffee')
@@ -35,19 +36,25 @@ DATA = [{
 			priority: SEED_TIME / 24 / 12 / 60 / 3
 		},
 		{
-			message: ["Update:","The ministry of Love this week has increased your Rations allowance to 29."]
+			priority: SEED_TIME / 24 / 12 / 60 / 3
+			message: ["UPDATE:","The Ministry of Love this week has increased your Ration allowance to 29."]
 			type: 'civil' 
 			actions: ['Queue For Rations']
 		},
 		{
 			message: ["You have recieved 5 Rations."]
-			type: 'civil'
 			actionHandler: (user) -> user.updateInventory( 'Rations', 5)
 		},
 		{
-			message: ["Coworker Charlie S. will give you 1 pack of Victory Cigarettes in exchange for 1 Ration"]
+			message: "Unless your life is tightly controlled you will never be free."
+			type: 'info'
+			priority: SEED_TIME / 24 / 12 / 60 / 3
+		},
+		{
+			message: ["FROM: Charlie S.","Sorry for the intrution, but could you spare 1 Ration? I'd give you a Pack of Victory Cigarettes in exchange."]
 			type: 'message' 
 			actions: ['Accept', 'Decline']
+			priority: SEED_TIME / 24 / 12 / 60 / 1.5
 			actionHandler: (user, action) ->
 				if action is 'Accept'
 					user.updateInventory( 'Rations', user.get('inventory')['Rations'] - 1 )
@@ -64,8 +71,8 @@ DATA = [{
 			type: 'info'
 		},
 		{
-			message: "Unless your life is tightly controlled you will never be free."
-			type: 'info'
+			message: ["FROM: Jane M.","Hi, it was great seeing you the other day.", "See you soon."]
+			type: 'message'
 		},
 		{
 			message: "INGSOC: Love it or commit a thoughtcrime."
@@ -220,7 +227,11 @@ class MainController extends Backbone.Router
 	showFrame: =>
 		opc = @user.getCurrentOPC( opcs )
 		console.log "Show frame...", opc.get('id')
-		frame = new FrameView( model: opc, user: @user )
+		frame = switch opc.get( 'type' )
+			when 'message'
+				new MessageView( model: opc, user: @user )
+			else 
+				new FrameView( model: opc, user: @user )
 		frame.on( 'next', @newFrame )
 		frame.render()
 		@app.$el.append frame.el

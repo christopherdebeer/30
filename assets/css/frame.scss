@@ -155,16 +155,21 @@
 
 	&:not(.seen) {
 		.footnotes { display: none; }
+		.actions { display: none; }
 	}
 
 	&.general {
 		background-color: #f0f2f3;
 	}
-	&.civil{
+	&.civil {
 		background-color: #f4fb8b;
 	}
-	&.info{
+	&.info {
 		background-color: #bedeff;
+	}
+	&.message {
+		background-color: #f0f2f3;
+		.body { top: 3em; }
 	}
 }
 
